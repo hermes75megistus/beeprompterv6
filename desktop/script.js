@@ -1,72 +1,26 @@
-// desktop/script.js - Edge Compatible with Fixed Infinite Scroll
+// desktop/script.js - Simple Infinite Scroll Like Mobile
 
 // Global variables
-var isPlaying = false;
-var currentMode = 'vertical'; // 'vertical' or 'horizontal'
-var currentSpeed = 50;
-var animationId = null;
-var textHeight = 0;
-var textWidth = 0;
-var animationStartTime = null;
-var totalPausedTime = 0;
-var lastPauseTime = null;
-var currentScrollPosition = 0;
-var isMirrored = false;
-var isFullscreen = false;
-var infiniteScroll = false;
+let isPlaying = false;
+let currentMode = 'vertical'; // 'vertical' or 'horizontal'
+let currentSpeed = 50;
+let animationId = null;
+let textHeight = 0;
+let textWidth = 0;
+let animationStartTime = null;
+let totalPausedTime = 0;
+let lastPauseTime = null;
+let currentScrollPosition = 0;
+let isMirrored = false;
+let isFullscreen = false;
 
-var scrollingText = document.getElementById('scrollingText');
-var textInput = document.getElementById('textInput');
-var speedRange = document.getElementById('speedRange');
-var prompterContainer = document.getElementById('prompterContainer');
+const scrollingText = document.getElementById('scrollingText');
+const textInput = document.getElementById('textInput');
+const speedRange = document.getElementById('speedRange');
+const prompterContainer = document.getElementById('prompterContainer');
 
 // Default text constant
-var DEFAULT_TEXT = "Beeprompter.com: Deliver Flawless Speeches with Your Free Online Teleprompter! Let your script scroll with you — smooth, professional, and stress-free. Beeprompter is a free, browser-based teleprompter that helps you read scripts naturally during video recordings, live streams, presentations, or speeches. No downloads. No setup. Works instantly on any device!";
-
-// Polyfills for Edge and older browsers
-(function() {
-    // requestAnimationFrame polyfill
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || 
-                                     window[vendors[x]+'CancelRequestAnimationFrame'];
-    }
-    
-    if (!window.requestAnimationFrame) {
-        window.requestAnimationFrame = function(callback) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { 
-                callback(currTime + timeToCall); 
-            }, timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
-    }
-    
-    if (!window.cancelAnimationFrame) {
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
-    }
-    
-    // performance.now polyfill
-    if (!window.performance) {
-        window.performance = {};
-    }
-    
-    if (!window.performance.now) {
-        var nowOffset = Date.now();
-        if (performance.timing && performance.timing.navigationStart) {
-            nowOffset = performance.timing.navigationStart;
-        }
-        window.performance.now = function() {
-            return Date.now() - nowOffset;
-        };
-    }
-})();
+const DEFAULT_TEXT = "Beeprompter.com: Deliver Flawless Speeches with Your Free Online Teleprompter! Let your script scroll with you — smooth, professional, and stress-free. Beeprompter is a free, browser-based teleprompter that helps you read scripts naturally during video recordings, live streams, presentations, or speeches. No downloads. No setup. Works instantly on any device!";
 
 function goHome() {
     if (confirm('Are you sure you want to return to the home page?')) {
@@ -75,57 +29,45 @@ function goHome() {
 }
 
 function togglePanel() {
-    var panel = document.getElementById('controlPanel');
-    var btn = document.querySelector('.btn-minimize i');
-    
-    if (panel.className.indexOf('minimized') > -1) {
-        panel.className = panel.className.replace(' minimized', '');
-        btn.className = 'fas fa-chevron-left';
-        prompterContainer.style.left = '400px';
-        prompterContainer.style.right = '150px';
-    } else {
-        panel.className += ' minimized';
+    const panel = document.getElementById('controlPanel');
+    const btn = document.querySelector('.btn-minimize i');
+    panel.classList.toggle('minimized');
+    if (panel.classList.contains('minimized')) {
         btn.className = 'fas fa-chevron-right';
         prompterContainer.style.left = '0px';
         prompterContainer.style.right = '0px';
+    } else {
+        btn.className = 'fas fa-chevron-left';
+        const panelWidth = window.innerWidth <= 1024 ? '350px' : '400px';
+        const rightSpace = window.innerWidth <= 1024 ? '100px' : '150px';
+        prompterContainer.style.left = panelWidth;
+        prompterContainer.style.right = rightSpace;
     }
 }
 
 function setMode(mode) {
     currentMode = mode;
-    var verticalBtn = document.getElementById('verticalBtn');
-    var horizontalBtn = document.getElementById('horizontalBtn');
-    var modeIndicator = document.getElementById('modeIndicator');
-    
-    if (mode === 'vertical') {
-        verticalBtn.className = 'mode-btn active';
-        horizontalBtn.className = 'mode-btn';
-        scrollingText.className = 'scrolling-text vertical-text';
-        modeIndicator.textContent = 'Vertical Mode';
-    } else {
-        verticalBtn.className = 'mode-btn';
-        horizontalBtn.className = 'mode-btn active';
-        scrollingText.className = 'scrolling-text horizontal-text';
-        modeIndicator.textContent = 'Horizontal Mode';
-    }
-    
+    document.getElementById('verticalBtn').classList.toggle('active', mode === 'vertical');
+    document.getElementById('horizontalBtn').classList.toggle('active', mode === 'horizontal');
+    scrollingText.className = mode === 'vertical' ? 'scrolling-text vertical-text' : 'scrolling-text horizontal-text';
     if (isMirrored) {
-        scrollingText.className += ' mirrored';
+        scrollingText.classList.add('mirrored');
     }
+    document.getElementById('modeIndicator').textContent = mode === 'vertical' ? 'Vertical Mode' : 'Horizontal Mode';
     
     updateTextDimensions();
     resetPosition();
-    showStatus(mode === 'vertical' ? 'Vertical Mode active' : 'Horizontal Mode active', 1500);
+    showStatus(`${mode === 'vertical' ? 'Vertical' : 'Horizontal'} Mode active`, 1500);
 }
 
 function updateTextDimensions() {
-    var tempDiv = document.createElement('div');
+    const tempDiv = document.createElement('div');
     tempDiv.style.position = 'absolute';
     tempDiv.style.visibility = 'hidden';
-    tempDiv.style.fontSize = window.getComputedStyle(scrollingText).fontSize;
-    tempDiv.style.fontFamily = window.getComputedStyle(scrollingText).fontFamily;
-    tempDiv.style.fontWeight = window.getComputedStyle(scrollingText).fontWeight;
-    tempDiv.style.lineHeight = window.getComputedStyle(scrollingText).lineHeight;
+    tempDiv.style.fontSize = getComputedStyle(scrollingText).fontSize;
+    tempDiv.style.fontFamily = getComputedStyle(scrollingText).fontFamily;
+    tempDiv.style.fontWeight = getComputedStyle(scrollingText).fontWeight;
+    tempDiv.style.lineHeight = getComputedStyle(scrollingText).lineHeight;
     
     if (currentMode === 'vertical') {
         tempDiv.style.width = '90%';
@@ -146,169 +88,82 @@ function updateTextDimensions() {
     document.body.removeChild(tempDiv);
 }
 
-// FIXED ANIMATION - Working Infinite Scroll
+// MOBILE GİBİ BASİT INFINITE SCROLL
 function animate(timestamp) {
     if (!isPlaying) return;
 
-    // Initialize timing
     if (!animationStartTime) {
         animationStartTime = timestamp;
-        
-        // Handle resume from paused position
+        // Eğer mevcut pozisyon varsa (pause'dan devam)
         if (currentScrollPosition !== 0) {
-            var containerSize = currentMode === 'vertical' ? prompterContainer.offsetHeight : prompterContainer.offsetWidth;
-            var textSize = currentMode === 'vertical' ? textHeight : textWidth;
-            var totalDistance = containerSize + textSize;
-            var distanceScrolled = containerSize - currentScrollPosition;
-            var effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
-            var timeOffset = (distanceScrolled / effectiveSpeed) * 1000;
-            animationStartTime = timestamp - timeOffset - totalPausedTime;
+            const containerSize = currentMode === 'vertical' ? prompterContainer.offsetHeight : prompterContainer.offsetWidth;
+            const textSize = currentMode === 'vertical' ? textHeight : textWidth;
+            const totalDistance = containerSize + textSize;
+            const currentProgress = (containerSize - currentScrollPosition) / totalDistance;
+            const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+            const timeToCurrentPosition = (currentProgress * totalDistance / effectiveSpeed) * 1000;
+            totalPausedTime = -timeToCurrentPosition;
         }
     }
     
-    // Calculate elapsed time
-    var elapsedTime = timestamp - animationStartTime - totalPausedTime;
-    
-    // Calculate effective speed
-    var effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
-    
-    // Calculate distance
-    var distanceTraveled = (elapsedTime / 1000) * effectiveSpeed;
+    const elapsedTime = timestamp - animationStartTime - totalPausedTime;
+    const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
     
     if (currentMode === 'vertical') {
-        var containerHeight = prompterContainer.offsetHeight;
-        var totalDistance = containerHeight + textHeight;
+        const containerHeight = prompterContainer.offsetHeight;
+        const totalDistance = containerHeight + textHeight;
+        const distance = (elapsedTime * effectiveSpeed / 1000);
         
-        if (infiniteScroll) {
-            // INFINITE SCROLL - Continuous loop
-            var progress = distanceTraveled / totalDistance;
-            var loops = Math.floor(progress);
-            var remainder = progress - loops;
-            
-            currentScrollPosition = containerHeight - (remainder * totalDistance);
-            
-            // Apply transform
-            var transformValue = 'translateX(-50%) translateY(' + (currentScrollPosition - containerHeight) + 'px)';
-            if (isMirrored) {
-                transformValue = 'scaleX(-1) translateX(50%) translateY(' + (currentScrollPosition - containerHeight) + 'px)';
-            }
-            scrollingText.style.transform = transformValue;
-            scrollingText.style.msTransform = transformValue;
-            scrollingText.style.webkitTransform = transformValue;
-            scrollingText.style.top = containerHeight + 'px';
-            
-        } else {
-            // SINGLE SCROLL - Stop at end
-            currentScrollPosition = containerHeight - distanceTraveled;
-            
-            if (currentScrollPosition < -textHeight) {
-                // Text completely scrolled out - stop
-                stopAnimation();
-                showStatus('Text finished - click Reset to restart', 2000);
-                return;
-            }
-            
-            // Apply transform
-            var transformValue = 'translateX(-50%) translateY(' + (currentScrollPosition - containerHeight) + 'px)';
-            if (isMirrored) {
-                transformValue = 'scaleX(-1) translateX(50%) translateY(' + (currentScrollPosition - containerHeight) + 'px)';
-            }
-            scrollingText.style.transform = transformValue;
-            scrollingText.style.msTransform = transformValue;
-            scrollingText.style.webkitTransform = transformValue;
-            scrollingText.style.top = containerHeight + 'px';
-        }
+        // INFINITE LOOP - Mobile'deki gibi
+        const progress = distance % totalDistance;
+        currentScrollPosition = containerHeight - progress;
         
-    } else { // horizontal mode
-        var containerWidth = prompterContainer.offsetWidth;
-        var totalDistance = containerWidth + textWidth;
+        scrollingText.style.transform = isMirrored 
+            ? `scaleX(-1) translateX(50%) translateY(${currentScrollPosition - containerHeight}px)`
+            : `translateX(-50%) translateY(${currentScrollPosition - containerHeight}px)`;
+        scrollingText.style.top = containerHeight + 'px';
         
-        if (infiniteScroll) {
-            // INFINITE SCROLL - Continuous loop
-            var progress = distanceTraveled / totalDistance;
-            var loops = Math.floor(progress);
-            var remainder = progress - loops;
-            
-            currentScrollPosition = containerWidth - (remainder * totalDistance);
-            
-            // Apply transform
-            var transformValue = 'translateY(-50%) translateX(' + (currentScrollPosition - containerWidth) + 'px)';
-            if (isMirrored) {
-                transformValue = 'scaleX(-1) translateY(-50%) translateX(' + (currentScrollPosition - containerWidth) + 'px)';
-            }
-            scrollingText.style.transform = transformValue;
-            scrollingText.style.msTransform = transformValue;
-            scrollingText.style.webkitTransform = transformValue;
-            scrollingText.style.left = containerWidth + 'px';
-            
-        } else {
-            // SINGLE SCROLL - Stop at end
-            currentScrollPosition = containerWidth - distanceTraveled;
-            
-            if (currentScrollPosition < -textWidth) {
-                // Text completely scrolled out - stop
-                stopAnimation();
-                showStatus('Text finished - click Reset to restart', 2000);
-                return;
-            }
-            
-            // Apply transform
-            var transformValue = 'translateY(-50%) translateX(' + (currentScrollPosition - containerWidth) + 'px)';
-            if (isMirrored) {
-                transformValue = 'scaleX(-1) translateY(-50%) translateX(' + (currentScrollPosition - containerWidth) + 'px)';
-            }
-            scrollingText.style.transform = transformValue;
-            scrollingText.style.msTransform = transformValue;
-            scrollingText.style.webkitTransform = transformValue;
-            scrollingText.style.left = containerWidth + 'px';
-        }
+    } else { // horizontal
+        const containerWidth = prompterContainer.offsetWidth;
+        const totalDistance = containerWidth + textWidth;
+        const distance = (elapsedTime * effectiveSpeed / 1000);
+        
+        // INFINITE LOOP - Mobile'deki gibi
+        const progress = distance % totalDistance;
+        currentScrollPosition = containerWidth - progress;
+        
+        scrollingText.style.transform = isMirrored 
+            ? `scaleX(-1) translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`
+            : `translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`;
+        scrollingText.style.left = containerWidth + 'px';
     }
     
-    // Continue animation
     if (isPlaying) {
         animationId = requestAnimationFrame(animate);
     }
 }
 
-function stopAnimation() {
-    isPlaying = false;
-    animationStartTime = null;
-    totalPausedTime = 0;
-    lastPauseTime = null;
-    
-    var playBtn = document.getElementById('playBtn');
-    playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
-    playBtn.className = playBtn.className.replace(' playing', '');
-    
-    if (animationId) {
-        cancelAnimationFrame(animationId);
-        animationId = null;
-    }
-}
-
 function updateText() {
-    var text = textInput.value.trim();
+    let text = textInput.value.trim();
     if (!text) {
         text = DEFAULT_TEXT;
-        textInput.value = DEFAULT_TEXT;
     }
     scrollingText.textContent = text;
     updateTextDimensions();
     resetPosition();
-    showStatus('Text updated: ' + text.length + ' characters');
+    showStatus(`Text updated: ${text.length} characters`);
 }
 
 function clearText() {
     textInput.value = '';
-    scrollingText.textContent = DEFAULT_TEXT;
-    updateTextDimensions();
-    resetPosition();
-    showStatus('Text cleared - using default text');
+    updateText();
+    showStatus('Text cleared');
 }
 
-function pasteFromClipboard() {
-    if (navigator.clipboard && navigator.clipboard.readText) {
-        navigator.clipboard.readText().then(function(text) {
+async function pasteFromClipboard() {
+    try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            const text = await navigator.clipboard.readText();
             if (text.trim()) {
                 textInput.value = text;
                 updateText();
@@ -316,28 +171,24 @@ function pasteFromClipboard() {
             } else {
                 showStatus('No text found in clipboard');
             }
-        }).catch(function(err) {
-            showStatus('Clipboard access denied. Use Ctrl+V to paste manually');
+        } else {
+            showStatus('Please use Ctrl+V to paste text manually');
             textInput.focus();
-        });
-    } else {
-        // Fallback for older browsers
-        showStatus('Please use Ctrl+V to paste text manually');
+        }
+    } catch (err) {
+        showStatus('Clipboard access denied. Use Ctrl+V to paste manually');
         textInput.focus();
     }
 }
 
 function loadFile() {
-    var fileInput = document.getElementById('fileInput');
-    var file = fileInput.files[0];
-    
+    const file = document.getElementById('fileInput').files[0];
     if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
             textInput.value = e.target.result.trim();
             updateText();
-            var fileInfo = document.getElementById('fileInfo');
-            fileInfo.textContent = file.name + ' (' + (file.size/1024).toFixed(1) + 'KB)';
+            document.getElementById('fileInfo').textContent = `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
             showStatus('File loaded');
         };
         reader.readAsText(file, 'UTF-8');
@@ -346,44 +197,35 @@ function loadFile() {
 
 function togglePlay() {
     isPlaying = !isPlaying;
-    var playBtn = document.getElementById('playBtn');
+    const playBtn = document.getElementById('playBtn');
 
     if (isPlaying) {
         playBtn.innerHTML = '<i class="fas fa-pause"></i><span>Pause</span>';
-        playBtn.className += ' playing';
+        playBtn.classList.add('playing');
         showStatus('Playing', 1000);
         
-        // Handle resume from pause
         if (lastPauseTime !== null) {
-            var pauseDuration = performance.now() - lastPauseTime;
+            const pauseDuration = performance.now() - lastPauseTime;
             totalPausedTime += pauseDuration;
             lastPauseTime = null;
         }
         
-        // Reset start time
         animationStartTime = null;
-        
-        // Start animation
         animationId = requestAnimationFrame(animate);
         
     } else {
-        playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
-        playBtn.className = playBtn.className.replace(' playing', '');
-        showStatus('Paused', 1000);
-        
-        // Record pause time
-        lastPauseTime = performance.now();
-        
-        // Stop animation
         if (animationId) {
             cancelAnimationFrame(animationId);
             animationId = null;
         }
+        playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
+        playBtn.classList.remove('playing');
+        showStatus('Paused', 1000);
+        lastPauseTime = performance.now();
     }
 }
 
 function resetPosition() {
-    // Stop everything
     isPlaying = false;
     animationStartTime = null;
     totalPausedTime = 0;
@@ -395,149 +237,89 @@ function resetPosition() {
         animationId = null;
     }
     
-    var playBtn = document.getElementById('playBtn');
+    const playBtn = document.getElementById('playBtn');
     playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
-    playBtn.className = playBtn.className.replace(' playing', '');
+    playBtn.classList.remove('playing');
     
-    // Reset position
     if (currentMode === 'vertical') {
-        var containerHeight = prompterContainer.offsetHeight;
-        scrollingText.style.top = containerHeight + 'px';
-        
-        var transformValue = 'translateX(-50%)';
-        if (isMirrored) {
-            transformValue = 'scaleX(-1) translateX(50%)';
-        }
-        scrollingText.style.transform = transformValue;
-        scrollingText.style.msTransform = transformValue;
-        scrollingText.style.webkitTransform = transformValue;
+        scrollingText.style.top = prompterContainer.offsetHeight + 'px';
+        scrollingText.style.transform = isMirrored 
+            ? 'scaleX(-1) translateX(50%)' 
+            : 'translateX(-50%)';
     } else {
-        var containerWidth = prompterContainer.offsetWidth;
-        scrollingText.style.left = containerWidth + 'px';
-        
-        var transformValue = 'translateY(-50%)';
-        if (isMirrored) {
-            transformValue = 'scaleX(-1) translateY(-50%)';
-        }
-        scrollingText.style.transform = transformValue;
-        scrollingText.style.msTransform = transformValue;
-        scrollingText.style.webkitTransform = transformValue;
+        scrollingText.style.left = prompterContainer.offsetWidth + 'px';
+        scrollingText.style.transform = isMirrored 
+            ? 'scaleX(-1) translateY(-50%)' 
+            : 'translateY(-50%)';
     }
     
     showStatus('Reset to beginning', 1000);
 }
 
+// Infinite toggle butonu kaldırıldı - sadece görsel olarak gizle
 function toggleInfiniteScroll() {
-    infiniteScroll = !infiniteScroll;
-    var infiniteBtn = document.getElementById('infiniteBtn');
-    
-    if (infiniteScroll) {
-        infiniteBtn.className += ' active';
-        infiniteBtn.innerHTML = '<i class="fas fa-infinity"></i><span>Infinite ✓</span>';
-        showStatus('Infinite scroll enabled - text will loop continuously', 2000);
-    } else {
-        infiniteBtn.className = infiniteBtn.className.replace(' active', '');
-        infiniteBtn.innerHTML = '<i class="fas fa-infinity"></i><span>Infinite</span>';
-        showStatus('Single scroll mode - text will stop at end', 2000);
-    }
-    
-    resetPosition();
+    // Hiçbir şey yapma - her zaman infinite
+    showStatus('Always infinite scroll mode', 1500);
 }
 
 function updateSpeed() {
     currentSpeed = parseInt(speedRange.value);
     document.getElementById('speedValue').textContent = currentSpeed;
-    document.getElementById('speedIndicator').textContent = 'Speed: ' + currentSpeed + ' px/s';
-    
-    // Adjust timing if playing
-    if (isPlaying && animationStartTime !== null) {
-        var now = performance.now();
-        var elapsedTime = now - animationStartTime - totalPausedTime;
-        var oldSpeed = currentSpeed === 0 ? 500 : currentSpeed;
-        var distanceTraveled = (elapsedTime / 1000) * oldSpeed;
-        var newSpeed = currentSpeed === 0 ? 500 : currentSpeed;
-        animationStartTime = now - (distanceTraveled / newSpeed * 1000) - totalPausedTime;
-    }
+    document.getElementById('speedIndicator').textContent = `Speed: ${currentSpeed} px/s`;
 }
 
 function setSpeed(speed) {
     speedRange.value = speed;
     updateSpeed();
-    showStatus('Speed: ' + speed + ' px/s', 1000);
+    showStatus(`Speed: ${speed} px/s`, 1000);
 }
 
 function updateSize() {
-    var sizeRange = document.getElementById('sizeRange');
-    var size = sizeRange.value;
+    const size = document.getElementById('sizeRange').value;
     document.getElementById('sizeValue').textContent = size + 'px';
     scrollingText.style.fontSize = size + 'px';
-    
     if (currentMode === 'horizontal') {
         scrollingText.style.fontSize = (parseInt(size) + 16) + 'px';
     }
-    
     updateTextDimensions();
     resetPosition();
 }
 
 function updateColor() {
-    var colorSelect = document.getElementById('colorSelect');
-    var color = colorSelect.value;
+    const color = document.getElementById('colorSelect').value;
     scrollingText.style.color = color;
     updateShadow();
 }
 
 function updateBackground() {
-    var backgroundSelect = document.getElementById('backgroundSelect');
-    prompterContainer.style.background = backgroundSelect.value;
+    prompterContainer.style.background = document.getElementById('backgroundSelect').value;
 }
 
 function updateMirror() {
-    var mirrorCheckbox = document.getElementById('mirrorCheckbox');
-    isMirrored = mirrorCheckbox.checked;
-    
-    if (isMirrored) {
-        scrollingText.className += ' mirrored';
-    } else {
-        scrollingText.className = scrollingText.className.replace(' mirrored', '');
-    }
-    
-    showStatus(isMirrored ? 'Mirror mode on' : 'Mirror mode off', 1000);
-    
-    if (!isPlaying) {
-        resetPosition();
-    }
+    isMirrored = document.getElementById('mirrorCheckbox').checked;
+    scrollingText.classList.toggle('mirrored', isMirrored);
+    showStatus(`Mirror mode ${isMirrored ? 'on' : 'off'}`, 1000);
+    resetPosition();
 }
 
 function updateBold() {
-    var boldCheckbox = document.getElementById('boldCheckbox');
-    scrollingText.style.fontWeight = boldCheckbox.checked ? 'bold' : 'normal';
+    scrollingText.style.fontWeight = document.getElementById('boldCheckbox').checked ? 'bold' : 'normal';
 }
 
 function updateShadow() {
-    var shadowCheckbox = document.getElementById('shadowCheckbox');
-    var color = scrollingText.style.color || '#00ff88';
-    
-    if (shadowCheckbox.checked) {
-        var shadowValue = '0 0 20px ' + color + ', 0 0 40px ' + color;
-        scrollingText.style.textShadow = shadowValue;
-    } else {
-        scrollingText.style.textShadow = 'none';
-    }
+    const shadowCheckbox = document.getElementById('shadowCheckbox');
+    const color = scrollingText.style.color || '#00ff88';
+    scrollingText.style.textShadow = shadowCheckbox.checked ? `0 0 20px ${color}CC, 0 0 40px ${color}88` : 'none';
 }
 
 function toggleFullscreen() {
-    var docEl = document.documentElement;
+    const docEl = document.documentElement;
     
-    if (!document.fullscreenElement && !document.webkitFullscreenElement && 
-        !document.mozFullScreenElement && !document.msFullscreenElement) {
-        
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
         if (docEl.requestFullscreen) {
-            docEl.requestFullscreen();
+            docEl.requestFullscreen().catch(err => console.error(err));
         } else if (docEl.webkitRequestFullscreen) {
             docEl.webkitRequestFullscreen();
-        } else if (docEl.mozRequestFullScreen) {
-            docEl.mozRequestFullScreen();
         } else if (docEl.msRequestFullscreen) {
             docEl.msRequestFullscreen();
         }
@@ -546,8 +328,6 @@ function toggleFullscreen() {
             document.exitFullscreen();
         } else if (document.webkitExitFullscreen) {
             document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
         } else if (document.msExitFullscreen) {
             document.msExitFullscreen();
         }
@@ -555,174 +335,129 @@ function toggleFullscreen() {
 }
 
 function handleFullscreenChange() {
-    isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
-                     document.mozFullScreenElement || document.msFullscreenElement);
-    
-    if (isFullscreen) {
-        document.body.className += ' fullscreen';
-    } else {
-        document.body.className = document.body.className.replace(' fullscreen', '');
-    }
-    
-    var fullscreenBtn = document.querySelector('.btn-fullscreen');
-    if (isFullscreen) {
-        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i><span>Exit</span>';
-    } else {
-        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i><span>Fullscreen</span>';
-    }
-    
-    setTimeout(function() {
+    isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+    document.body.classList.toggle('fullscreen', isFullscreen);
+    document.querySelector('.btn-fullscreen').innerHTML = isFullscreen
+        ? '<i class="fas fa-compress"></i><span>Exit</span>'
+        : '<i class="fas fa-expand"></i><span>Fullscreen</span>';
+    setTimeout(() => {
         updateTextDimensions();
         resetPosition();
     }, 100);
 }
 
-// Fullscreen event listeners
 document.addEventListener('fullscreenchange', handleFullscreenChange);
 document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+document.addEventListener('msfullscreenchange', handleFullscreenChange);
 
-function showStatus(message, duration) {
-    duration = duration || 2000;
-    var status = document.getElementById('status');
+function showStatus(message, duration = 2000) {
+    const status = document.getElementById('status');
     status.textContent = message;
     status.style.opacity = '1';
-    
-    setTimeout(function() {
-        status.style.opacity = '0';
-    }, duration);
+    setTimeout(() => { status.style.opacity = '0'; }, duration);
 }
 
-// Keyboard event handler
-document.addEventListener('keydown', function(e) {
-    // Skip if typing in input
-    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
-        return;
-    }
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
     
-    var key = e.key || String.fromCharCode(e.keyCode);
-    var keyCode = e.keyCode || e.which;
-    
-    // Handle special keys
-    switch(keyCode) {
-        case 32: // Space
+    switch(e.key) {
+        case ' ':
             e.preventDefault();
             togglePlay();
             break;
-        case 82: // R
-        case 114: // r
-            e.preventDefault();
+        case 'r':
+        case 'R':
             resetPosition();
             break;
-        case 70: // F
-        case 102: // f
-            e.preventDefault();
+        case 'f':
+        case 'F':
             toggleFullscreen();
             break;
-        case 86: // V
-        case 118: // v
-            e.preventDefault();
+        case 'v':
+        case 'V':
             setMode('vertical');
             break;
-        case 72: // H
-        case 104: // h
-            e.preventDefault();
+        case 'h':
+        case 'H':
             setMode('horizontal');
             break;
-        case 73: // I
-        case 105: // i
-            e.preventDefault();
+        case 'i':
+        case 'I':
             toggleInfiniteScroll();
             break;
-        case 38: // Arrow Up
+        case 'ArrowUp':
             e.preventDefault();
             setSpeed(Math.min(500, currentSpeed + 10));
             break;
-        case 40: // Arrow Down
+        case 'ArrowDown':
             e.preventDefault();
             setSpeed(Math.max(10, currentSpeed - 10));
             break;
-        case 27: // Escape
-            if (isFullscreen) {
-                e.preventDefault();
-                toggleFullscreen();
-            }
+        case 'Escape':
+            if (isFullscreen) toggleFullscreen();
             break;
     }
 });
 
-// Window resize handler
-window.addEventListener('resize', function() {
+window.addEventListener('resize', () => {
     updateTextDimensions();
-    if (!isPlaying) {
-        resetPosition();
-    }
+    resetPosition();
 });
 
-// Visibility change handler
-document.addEventListener('visibilitychange', function() {
+document.addEventListener('visibilitychange', () => {
     if (document.hidden && isPlaying) {
         togglePlay();
     }
 });
 
-// Initialize application
 function initializeApp() {
-    // Set default text
     if (!textInput.value.trim()) {
         textInput.value = DEFAULT_TEXT;
     }
     
-    // Initialize all components
-    updateText();
+    resetPosition();
     updateSpeed();
     updateSize();
     updateColor();
     updateBackground();
     updateBold();
     updateShadow();
+    updateText();
     
-    // Set initial position with delay for proper calculation
-    setTimeout(function() {
+    // Infinite butonu görsel olarak aktif yap
+    const infiniteBtn = document.getElementById('infiniteBtn');
+    if (infiniteBtn) {
+        infiniteBtn.classList.add('active');
+        infiniteBtn.innerHTML = '<i class="fas fa-infinity"></i><span>Infinite ✓</span>';
+    }
+    
+    setTimeout(() => {
         updateTextDimensions();
         resetPosition();
     }, 100);
     
-    showStatus('Ready - Press Space to play/pause, I for infinite mode', 3000);
-    
-    console.log('Desktop Prompter initialized - Edge compatible');
+    showStatus('Ready - Infinite scroll always active', 3000);
 }
 
-// DOM Ready handler for older browsers
-function domReady(callback) {
-    if (document.readyState === 'interactive' || document.readyState === 'complete') {
-        callback();
-    } else {
-        document.addEventListener('DOMContentLoaded', callback);
-    }
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
 }
 
-// Initialize when DOM is ready
-domReady(initializeApp);
-
-// Additional initialization on window load
-window.addEventListener('load', function() {
+window.addEventListener('load', () => {
     setTimeout(initializeApp, 50);
 });
 
-// Paste event handler
-document.addEventListener('paste', function(e) {
+document.addEventListener('paste', (e) => {
     if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
         e.preventDefault();
-        
-        var text = '';
+        let text = '';
         if (e.clipboardData) {
             text = e.clipboardData.getData('text/plain');
         } else if (window.clipboardData) {
             text = window.clipboardData.getData('Text');
         }
-        
         if (text) {
             textInput.value = text;
             updateText();
@@ -731,4 +466,4 @@ document.addEventListener('paste', function(e) {
     }
 });
 
-console.log('Desktop Prompter v2.0 - Edge Compatible with Fixed Infinite Scroll');
+console.log('🎯 Desktop Prompter: Simple infinite scroll like mobile')
