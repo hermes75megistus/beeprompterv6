@@ -1,47 +1,72 @@
-// desktop/script.js - Fixed Infinite Scroll Animation
+// desktop/script.js - Edge Compatible with Fixed Infinite Scroll
 
 // Global variables
-let isPlaying = false;
-let currentMode = 'vertical'; // 'vertical' or 'horizontal'
-let currentSpeed = 50;
-let animationId = null;
-let textHeight = 0;
-let textWidth = 0;
-let animationStartTime = null;
-let totalPausedTime = 0;
-let lastPauseTime = null;
-let currentScrollPosition = 0;
-let isMirrored = false;
-let isFullscreen = false;
-let infiniteScroll = false;
+var isPlaying = false;
+var currentMode = 'vertical'; // 'vertical' or 'horizontal'
+var currentSpeed = 50;
+var animationId = null;
+var textHeight = 0;
+var textWidth = 0;
+var animationStartTime = null;
+var totalPausedTime = 0;
+var lastPauseTime = null;
+var currentScrollPosition = 0;
+var isMirrored = false;
+var isFullscreen = false;
+var infiniteScroll = false;
 
-const scrollingText = document.getElementById('scrollingText');
-const textInput = document.getElementById('textInput');
-const speedRange = document.getElementById('speedRange');
-const prompterContainer = document.getElementById('prompterContainer');
+var scrollingText = document.getElementById('scrollingText');
+var textInput = document.getElementById('textInput');
+var speedRange = document.getElementById('speedRange');
+var prompterContainer = document.getElementById('prompterContainer');
 
 // Default text constant
-const DEFAULT_TEXT = "Beeprompter.com: Deliver Flawless Speeches with Your Free Online Teleprompter! Let your script scroll with you — smooth, professional, and stress-free. Beeprompter is a free, browser-based teleprompter that helps you read scripts naturally during video recordings, live streams, presentations, or speeches. No downloads. No setup. Works instantly on any device!";
+var DEFAULT_TEXT = "Beeprompter.com: Deliver Flawless Speeches with Your Free Online Teleprompter! Let your script scroll with you — smooth, professional, and stress-free. Beeprompter is a free, browser-based teleprompter that helps you read scripts naturally during video recordings, live streams, presentations, or speeches. No downloads. No setup. Works instantly on any device!";
 
-// Edge compatibility fixes
-if (!window.requestAnimationFrame) {
-    window.requestAnimationFrame = function(callback) {
-        return setTimeout(callback, 1000 / 60);
-    };
-}
-
-if (!window.cancelAnimationFrame) {
-    window.cancelAnimationFrame = function(id) {
-        clearTimeout(id);
-    };
-}
-
-if (!window.performance || !window.performance.now) {
-    window.performance = window.performance || {};
-    window.performance.now = function() {
-        return Date.now();
-    };
-}
+// Polyfills for Edge and older browsers
+(function() {
+    // requestAnimationFrame polyfill
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || 
+                                     window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+    
+    if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = function(callback) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { 
+                callback(currTime + timeToCall); 
+            }, timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+    }
+    
+    if (!window.cancelAnimationFrame) {
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+    }
+    
+    // performance.now polyfill
+    if (!window.performance) {
+        window.performance = {};
+    }
+    
+    if (!window.performance.now) {
+        var nowOffset = Date.now();
+        if (performance.timing && performance.timing.navigationStart) {
+            nowOffset = performance.timing.navigationStart;
+        }
+        window.performance.now = function() {
+            return Date.now() - nowOffset;
+        };
+    }
+})();
 
 function goHome() {
     if (confirm('Are you sure you want to return to the home page?')) {
@@ -50,45 +75,57 @@ function goHome() {
 }
 
 function togglePanel() {
-    const panel = document.getElementById('controlPanel');
-    const btn = document.querySelector('.btn-minimize i');
-    panel.classList.toggle('minimized');
-    if (panel.classList.contains('minimized')) {
+    var panel = document.getElementById('controlPanel');
+    var btn = document.querySelector('.btn-minimize i');
+    
+    if (panel.className.indexOf('minimized') > -1) {
+        panel.className = panel.className.replace(' minimized', '');
+        btn.className = 'fas fa-chevron-left';
+        prompterContainer.style.left = '400px';
+        prompterContainer.style.right = '150px';
+    } else {
+        panel.className += ' minimized';
         btn.className = 'fas fa-chevron-right';
         prompterContainer.style.left = '0px';
         prompterContainer.style.right = '0px';
-    } else {
-        btn.className = 'fas fa-chevron-left';
-        const panelWidth = window.innerWidth <= 1024 ? '350px' : '400px';
-        const rightSpace = window.innerWidth <= 1024 ? '100px' : '150px';
-        prompterContainer.style.left = panelWidth;
-        prompterContainer.style.right = rightSpace;
     }
 }
 
 function setMode(mode) {
     currentMode = mode;
-    document.getElementById('verticalBtn').classList.toggle('active', mode === 'vertical');
-    document.getElementById('horizontalBtn').classList.toggle('active', mode === 'horizontal');
-    scrollingText.className = mode === 'vertical' ? 'scrolling-text vertical-text' : 'scrolling-text horizontal-text';
-    if (isMirrored) {
-        scrollingText.classList.add('mirrored');
+    var verticalBtn = document.getElementById('verticalBtn');
+    var horizontalBtn = document.getElementById('horizontalBtn');
+    var modeIndicator = document.getElementById('modeIndicator');
+    
+    if (mode === 'vertical') {
+        verticalBtn.className = 'mode-btn active';
+        horizontalBtn.className = 'mode-btn';
+        scrollingText.className = 'scrolling-text vertical-text';
+        modeIndicator.textContent = 'Vertical Mode';
+    } else {
+        verticalBtn.className = 'mode-btn';
+        horizontalBtn.className = 'mode-btn active';
+        scrollingText.className = 'scrolling-text horizontal-text';
+        modeIndicator.textContent = 'Horizontal Mode';
     }
-    document.getElementById('modeIndicator').textContent = mode === 'vertical' ? 'Vertical Mode' : 'Horizontal Mode';
+    
+    if (isMirrored) {
+        scrollingText.className += ' mirrored';
+    }
     
     updateTextDimensions();
     resetPosition();
-    showStatus(`${mode === 'vertical' ? 'Vertical' : 'Horizontal'} Mode active`, 1500);
+    showStatus(mode === 'vertical' ? 'Vertical Mode active' : 'Horizontal Mode active', 1500);
 }
 
 function updateTextDimensions() {
-    const tempDiv = document.createElement('div');
+    var tempDiv = document.createElement('div');
     tempDiv.style.position = 'absolute';
     tempDiv.style.visibility = 'hidden';
-    tempDiv.style.fontSize = getComputedStyle(scrollingText).fontSize;
-    tempDiv.style.fontFamily = getComputedStyle(scrollingText).fontFamily;
-    tempDiv.style.fontWeight = getComputedStyle(scrollingText).fontWeight;
-    tempDiv.style.lineHeight = getComputedStyle(scrollingText).lineHeight;
+    tempDiv.style.fontSize = window.getComputedStyle(scrollingText).fontSize;
+    tempDiv.style.fontFamily = window.getComputedStyle(scrollingText).fontFamily;
+    tempDiv.style.fontWeight = window.getComputedStyle(scrollingText).fontWeight;
+    tempDiv.style.lineHeight = window.getComputedStyle(scrollingText).lineHeight;
     
     if (currentMode === 'vertical') {
         tempDiv.style.width = '90%';
@@ -109,133 +146,120 @@ function updateTextDimensions() {
     document.body.removeChild(tempDiv);
 }
 
-// FIXED ANIMATION FUNCTION - PROPER INFINITE SCROLL
+// FIXED ANIMATION - Working Infinite Scroll
 function animate(timestamp) {
     if (!isPlaying) return;
 
-    // Initialize start time
+    // Initialize timing
     if (!animationStartTime) {
         animationStartTime = timestamp;
         
-        // If we have a current position (from manual drag or pause), calculate the equivalent time offset
+        // Handle resume from paused position
         if (currentScrollPosition !== 0) {
-            const containerSize = currentMode === 'vertical' ? prompterContainer.offsetHeight : prompterContainer.offsetWidth;
-            const textSize = currentMode === 'vertical' ? textHeight : textWidth;
-            const totalDistance = containerSize + textSize;
-            
-            // Calculate how far we've already scrolled
-            const distanceScrolled = containerSize - currentScrollPosition;
-            
-            // Convert to time offset
-            const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
-            const timeOffset = (distanceScrolled / effectiveSpeed) * 1000;
-            
-            // Apply the offset by adjusting the start time
+            var containerSize = currentMode === 'vertical' ? prompterContainer.offsetHeight : prompterContainer.offsetWidth;
+            var textSize = currentMode === 'vertical' ? textHeight : textWidth;
+            var totalDistance = containerSize + textSize;
+            var distanceScrolled = containerSize - currentScrollPosition;
+            var effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+            var timeOffset = (distanceScrolled / effectiveSpeed) * 1000;
             animationStartTime = timestamp - timeOffset - totalPausedTime;
         }
     }
     
     // Calculate elapsed time
-    const elapsedTime = timestamp - animationStartTime - totalPausedTime;
+    var elapsedTime = timestamp - animationStartTime - totalPausedTime;
     
-    // Calculate speed (0 means maximum speed of 500px/s)
-    const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+    // Calculate effective speed
+    var effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
     
-    // Calculate distance traveled
-    const distanceTraveled = (elapsedTime / 1000) * effectiveSpeed;
+    // Calculate distance
+    var distanceTraveled = (elapsedTime / 1000) * effectiveSpeed;
     
     if (currentMode === 'vertical') {
-        const containerHeight = prompterContainer.offsetHeight;
-        const totalDistance = containerHeight + textHeight;
+        var containerHeight = prompterContainer.offsetHeight;
+        var totalDistance = containerHeight + textHeight;
         
         if (infiniteScroll) {
-            // INFINITE MODE: Continuous loop
-            // Calculate position within the cycle
-            const cyclePosition = distanceTraveled % totalDistance;
-            currentScrollPosition = containerHeight - cyclePosition;
+            // INFINITE SCROLL - Continuous loop
+            var progress = distanceTraveled / totalDistance;
+            var loops = Math.floor(progress);
+            var remainder = progress - loops;
+            
+            currentScrollPosition = containerHeight - (remainder * totalDistance);
             
             // Apply transform
-            scrollingText.style.transform = isMirrored 
-                ? `scaleX(-1) translateX(50%) translateY(${currentScrollPosition - containerHeight}px)`
-                : `translateX(-50%) translateY(${currentScrollPosition - containerHeight}px)`;
+            var transformValue = 'translateX(-50%) translateY(' + (currentScrollPosition - containerHeight) + 'px)';
+            if (isMirrored) {
+                transformValue = 'scaleX(-1) translateX(50%) translateY(' + (currentScrollPosition - containerHeight) + 'px)';
+            }
+            scrollingText.style.transform = transformValue;
+            scrollingText.style.msTransform = transformValue;
+            scrollingText.style.webkitTransform = transformValue;
             scrollingText.style.top = containerHeight + 'px';
             
         } else {
-            // SINGLE MODE: Stop at the end
+            // SINGLE SCROLL - Stop at end
             currentScrollPosition = containerHeight - distanceTraveled;
             
-            // Check if text has completely exited
             if (currentScrollPosition < -textHeight) {
-                // Stop animation
-                isPlaying = false;
-                animationStartTime = null;
-                totalPausedTime = 0;
-                lastPauseTime = null;
-                
-                const playBtn = document.getElementById('playBtn');
-                playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
-                playBtn.classList.remove('playing');
-                
+                // Text completely scrolled out - stop
+                stopAnimation();
                 showStatus('Text finished - click Reset to restart', 2000);
-                
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
-                    animationId = null;
-                }
                 return;
             }
             
             // Apply transform
-            scrollingText.style.transform = isMirrored 
-                ? `scaleX(-1) translateX(50%) translateY(${currentScrollPosition - containerHeight}px)`
-                : `translateX(-50%) translateY(${currentScrollPosition - containerHeight}px)`;
+            var transformValue = 'translateX(-50%) translateY(' + (currentScrollPosition - containerHeight) + 'px)';
+            if (isMirrored) {
+                transformValue = 'scaleX(-1) translateX(50%) translateY(' + (currentScrollPosition - containerHeight) + 'px)';
+            }
+            scrollingText.style.transform = transformValue;
+            scrollingText.style.msTransform = transformValue;
+            scrollingText.style.webkitTransform = transformValue;
             scrollingText.style.top = containerHeight + 'px';
         }
         
     } else { // horizontal mode
-        const containerWidth = prompterContainer.offsetWidth;
-        const totalDistance = containerWidth + textWidth;
+        var containerWidth = prompterContainer.offsetWidth;
+        var totalDistance = containerWidth + textWidth;
         
         if (infiniteScroll) {
-            // INFINITE MODE: Continuous loop
-            const cyclePosition = distanceTraveled % totalDistance;
-            currentScrollPosition = containerWidth - cyclePosition;
+            // INFINITE SCROLL - Continuous loop
+            var progress = distanceTraveled / totalDistance;
+            var loops = Math.floor(progress);
+            var remainder = progress - loops;
+            
+            currentScrollPosition = containerWidth - (remainder * totalDistance);
             
             // Apply transform
-            scrollingText.style.transform = isMirrored 
-                ? `scaleX(-1) translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`
-                : `translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`;
+            var transformValue = 'translateY(-50%) translateX(' + (currentScrollPosition - containerWidth) + 'px)';
+            if (isMirrored) {
+                transformValue = 'scaleX(-1) translateY(-50%) translateX(' + (currentScrollPosition - containerWidth) + 'px)';
+            }
+            scrollingText.style.transform = transformValue;
+            scrollingText.style.msTransform = transformValue;
+            scrollingText.style.webkitTransform = transformValue;
             scrollingText.style.left = containerWidth + 'px';
             
         } else {
-            // SINGLE MODE: Stop at the end
+            // SINGLE SCROLL - Stop at end
             currentScrollPosition = containerWidth - distanceTraveled;
             
-            // Check if text has completely exited
             if (currentScrollPosition < -textWidth) {
-                // Stop animation
-                isPlaying = false;
-                animationStartTime = null;
-                totalPausedTime = 0;
-                lastPauseTime = null;
-                
-                const playBtn = document.getElementById('playBtn');
-                playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
-                playBtn.classList.remove('playing');
-                
+                // Text completely scrolled out - stop
+                stopAnimation();
                 showStatus('Text finished - click Reset to restart', 2000);
-                
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
-                    animationId = null;
-                }
                 return;
             }
             
             // Apply transform
-            scrollingText.style.transform = isMirrored 
-                ? `scaleX(-1) translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`
-                : `translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`;
+            var transformValue = 'translateY(-50%) translateX(' + (currentScrollPosition - containerWidth) + 'px)';
+            if (isMirrored) {
+                transformValue = 'scaleX(-1) translateY(-50%) translateX(' + (currentScrollPosition - containerWidth) + 'px)';
+            }
+            scrollingText.style.transform = transformValue;
+            scrollingText.style.msTransform = transformValue;
+            scrollingText.style.webkitTransform = transformValue;
             scrollingText.style.left = containerWidth + 'px';
         }
     }
@@ -246,8 +270,24 @@ function animate(timestamp) {
     }
 }
 
+function stopAnimation() {
+    isPlaying = false;
+    animationStartTime = null;
+    totalPausedTime = 0;
+    lastPauseTime = null;
+    
+    var playBtn = document.getElementById('playBtn');
+    playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
+    playBtn.className = playBtn.className.replace(' playing', '');
+    
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+}
+
 function updateText() {
-    let text = textInput.value.trim();
+    var text = textInput.value.trim();
     if (!text) {
         text = DEFAULT_TEXT;
         textInput.value = DEFAULT_TEXT;
@@ -255,7 +295,7 @@ function updateText() {
     scrollingText.textContent = text;
     updateTextDimensions();
     resetPosition();
-    showStatus(`Text updated: ${text.length} characters`);
+    showStatus('Text updated: ' + text.length + ' characters');
 }
 
 function clearText() {
@@ -266,10 +306,9 @@ function clearText() {
     showStatus('Text cleared - using default text');
 }
 
-async function pasteFromClipboard() {
-    try {
-        if (navigator.clipboard && navigator.clipboard.readText) {
-            const text = await navigator.clipboard.readText();
+function pasteFromClipboard() {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(function(text) {
             if (text.trim()) {
                 textInput.value = text;
                 updateText();
@@ -277,24 +316,28 @@ async function pasteFromClipboard() {
             } else {
                 showStatus('No text found in clipboard');
             }
-        } else {
-            showStatus('Please use Ctrl+V to paste text manually');
+        }).catch(function(err) {
+            showStatus('Clipboard access denied. Use Ctrl+V to paste manually');
             textInput.focus();
-        }
-    } catch (err) {
-        showStatus('Clipboard access denied. Use Ctrl+V to paste manually');
+        });
+    } else {
+        // Fallback for older browsers
+        showStatus('Please use Ctrl+V to paste text manually');
         textInput.focus();
     }
 }
 
 function loadFile() {
-    const file = document.getElementById('fileInput').files[0];
+    var fileInput = document.getElementById('fileInput');
+    var file = fileInput.files[0];
+    
     if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
+        var reader = new FileReader();
+        reader.onload = function(e) {
             textInput.value = e.target.result.trim();
             updateText();
-            document.getElementById('fileInfo').textContent = `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+            var fileInfo = document.getElementById('fileInfo');
+            fileInfo.textContent = file.name + ' (' + (file.size/1024).toFixed(1) + 'KB)';
             showStatus('File loaded');
         };
         reader.readAsText(file, 'UTF-8');
@@ -303,21 +346,21 @@ function loadFile() {
 
 function togglePlay() {
     isPlaying = !isPlaying;
-    const playBtn = document.getElementById('playBtn');
+    var playBtn = document.getElementById('playBtn');
 
     if (isPlaying) {
         playBtn.innerHTML = '<i class="fas fa-pause"></i><span>Pause</span>';
-        playBtn.classList.add('playing');
+        playBtn.className += ' playing';
         showStatus('Playing', 1000);
         
-        // Handle pause/resume timing
+        // Handle resume from pause
         if (lastPauseTime !== null) {
-            const pauseDuration = performance.now() - lastPauseTime;
+            var pauseDuration = performance.now() - lastPauseTime;
             totalPausedTime += pauseDuration;
             lastPauseTime = null;
         }
         
-        // Reset animation start time to recalculate from current position
+        // Reset start time
         animationStartTime = null;
         
         // Start animation
@@ -325,7 +368,7 @@ function togglePlay() {
         
     } else {
         playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
-        playBtn.classList.remove('playing');
+        playBtn.className = playBtn.className.replace(' playing', '');
         showStatus('Paused', 1000);
         
         // Record pause time
@@ -340,79 +383,79 @@ function togglePlay() {
 }
 
 function resetPosition() {
-    // Stop playing
+    // Stop everything
     isPlaying = false;
-    
-    // Reset all timing variables
     animationStartTime = null;
     totalPausedTime = 0;
     lastPauseTime = null;
     currentScrollPosition = 0;
     
-    // Cancel any running animation
     if (animationId) {
         cancelAnimationFrame(animationId);
         animationId = null;
     }
     
-    // Update play button
-    const playBtn = document.getElementById('playBtn');
+    var playBtn = document.getElementById('playBtn');
     playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
-    playBtn.classList.remove('playing');
+    playBtn.className = playBtn.className.replace(' playing', '');
     
-    // Reset text position to start
+    // Reset position
     if (currentMode === 'vertical') {
-        const containerHeight = prompterContainer.offsetHeight;
+        var containerHeight = prompterContainer.offsetHeight;
         scrollingText.style.top = containerHeight + 'px';
-        scrollingText.style.transform = isMirrored 
-            ? 'scaleX(-1) translateX(50%)' 
-            : 'translateX(-50%)';
+        
+        var transformValue = 'translateX(-50%)';
+        if (isMirrored) {
+            transformValue = 'scaleX(-1) translateX(50%)';
+        }
+        scrollingText.style.transform = transformValue;
+        scrollingText.style.msTransform = transformValue;
+        scrollingText.style.webkitTransform = transformValue;
     } else {
-        const containerWidth = prompterContainer.offsetWidth;
+        var containerWidth = prompterContainer.offsetWidth;
         scrollingText.style.left = containerWidth + 'px';
-        scrollingText.style.transform = isMirrored 
-            ? 'scaleX(-1) translateY(-50%)' 
-            : 'translateY(-50%)';
+        
+        var transformValue = 'translateY(-50%)';
+        if (isMirrored) {
+            transformValue = 'scaleX(-1) translateY(-50%)';
+        }
+        scrollingText.style.transform = transformValue;
+        scrollingText.style.msTransform = transformValue;
+        scrollingText.style.webkitTransform = transformValue;
     }
     
     showStatus('Reset to beginning', 1000);
 }
 
-// Toggle infinite scroll
 function toggleInfiniteScroll() {
     infiniteScroll = !infiniteScroll;
-    const infiniteBtn = document.getElementById('infiniteBtn');
+    var infiniteBtn = document.getElementById('infiniteBtn');
     
     if (infiniteScroll) {
-        infiniteBtn.classList.add('active');
+        infiniteBtn.className += ' active';
         infiniteBtn.innerHTML = '<i class="fas fa-infinity"></i><span>Infinite ✓</span>';
         showStatus('Infinite scroll enabled - text will loop continuously', 2000);
     } else {
-        infiniteBtn.classList.remove('active');
+        infiniteBtn.className = infiniteBtn.className.replace(' active', '');
         infiniteBtn.innerHTML = '<i class="fas fa-infinity"></i><span>Infinite</span>';
         showStatus('Single scroll mode - text will stop at end', 2000);
     }
     
-    // Reset to apply the change
     resetPosition();
 }
 
 function updateSpeed() {
     currentSpeed = parseInt(speedRange.value);
     document.getElementById('speedValue').textContent = currentSpeed;
-    document.getElementById('speedIndicator').textContent = `Speed: ${currentSpeed} px/s`;
+    document.getElementById('speedIndicator').textContent = 'Speed: ' + currentSpeed + ' px/s';
     
-    // If playing, adjust timing to maintain smooth speed change
+    // Adjust timing if playing
     if (isPlaying && animationStartTime !== null) {
-        const now = performance.now();
-        const elapsedTime = now - animationStartTime - totalPausedTime;
-        
-        // Calculate current progress
-        const oldSpeed = currentSpeed === 0 ? 500 : currentSpeed;
-        const distanceTraveled = (elapsedTime / 1000) * oldSpeed;
-        
-        // Adjust start time to maintain position with new speed
-        const newSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+        var now = performance.now();
+        var elapsedTime = now - animationStartTime - totalPausedTime;
+        var oldSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+        var distanceTraveled = (elapsedTime / 1000) * oldSpeed;
+        var newSpeed = currentSpeed === 0 ? 500 : currentSpeed;
         animationStartTime = now - (distanceTraveled / newSpeed * 1000) - totalPausedTime;
     }
 }
@@ -420,59 +463,81 @@ function updateSpeed() {
 function setSpeed(speed) {
     speedRange.value = speed;
     updateSpeed();
-    showStatus(`Speed: ${speed} px/s`, 1000);
+    showStatus('Speed: ' + speed + ' px/s', 1000);
 }
 
 function updateSize() {
-    const size = document.getElementById('sizeRange').value;
+    var sizeRange = document.getElementById('sizeRange');
+    var size = sizeRange.value;
     document.getElementById('sizeValue').textContent = size + 'px';
     scrollingText.style.fontSize = size + 'px';
+    
     if (currentMode === 'horizontal') {
         scrollingText.style.fontSize = (parseInt(size) + 16) + 'px';
     }
+    
     updateTextDimensions();
     resetPosition();
 }
 
 function updateColor() {
-    const color = document.getElementById('colorSelect').value;
+    var colorSelect = document.getElementById('colorSelect');
+    var color = colorSelect.value;
     scrollingText.style.color = color;
     updateShadow();
 }
 
 function updateBackground() {
-    prompterContainer.style.background = document.getElementById('backgroundSelect').value;
+    var backgroundSelect = document.getElementById('backgroundSelect');
+    prompterContainer.style.background = backgroundSelect.value;
 }
 
 function updateMirror() {
-    isMirrored = document.getElementById('mirrorCheckbox').checked;
-    scrollingText.classList.toggle('mirrored', isMirrored);
-    showStatus(`Mirror mode ${isMirrored ? 'on' : 'off'}`, 1000);
+    var mirrorCheckbox = document.getElementById('mirrorCheckbox');
+    isMirrored = mirrorCheckbox.checked;
     
-    // Update transform while maintaining position
+    if (isMirrored) {
+        scrollingText.className += ' mirrored';
+    } else {
+        scrollingText.className = scrollingText.className.replace(' mirrored', '');
+    }
+    
+    showStatus(isMirrored ? 'Mirror mode on' : 'Mirror mode off', 1000);
+    
     if (!isPlaying) {
         resetPosition();
     }
 }
 
 function updateBold() {
-    scrollingText.style.fontWeight = document.getElementById('boldCheckbox').checked ? 'bold' : 'normal';
+    var boldCheckbox = document.getElementById('boldCheckbox');
+    scrollingText.style.fontWeight = boldCheckbox.checked ? 'bold' : 'normal';
 }
 
 function updateShadow() {
-    const shadowCheckbox = document.getElementById('shadowCheckbox');
-    const color = scrollingText.style.color || '#00ff88';
-    scrollingText.style.textShadow = shadowCheckbox.checked ? `0 0 20px ${color}CC, 0 0 40px ${color}88` : 'none';
+    var shadowCheckbox = document.getElementById('shadowCheckbox');
+    var color = scrollingText.style.color || '#00ff88';
+    
+    if (shadowCheckbox.checked) {
+        var shadowValue = '0 0 20px ' + color + ', 0 0 40px ' + color;
+        scrollingText.style.textShadow = shadowValue;
+    } else {
+        scrollingText.style.textShadow = 'none';
+    }
 }
 
 function toggleFullscreen() {
-    const docEl = document.documentElement;
+    var docEl = document.documentElement;
     
-    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+        !document.mozFullScreenElement && !document.msFullscreenElement) {
+        
         if (docEl.requestFullscreen) {
-            docEl.requestFullscreen().catch(err => console.error(err));
+            docEl.requestFullscreen();
         } else if (docEl.webkitRequestFullscreen) {
             docEl.webkitRequestFullscreen();
+        } else if (docEl.mozRequestFullScreen) {
+            docEl.mozRequestFullScreen();
         } else if (docEl.msRequestFullscreen) {
             docEl.msRequestFullscreen();
         }
@@ -481,6 +546,8 @@ function toggleFullscreen() {
             document.exitFullscreen();
         } else if (document.webkitExitFullscreen) {
             document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
         } else if (document.msExitFullscreen) {
             document.msExitFullscreen();
         }
@@ -488,59 +555,105 @@ function toggleFullscreen() {
 }
 
 function handleFullscreenChange() {
-    isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-    document.body.classList.toggle('fullscreen', isFullscreen);
-    document.querySelector('.btn-fullscreen').innerHTML = isFullscreen
-        ? '<i class="fas fa-compress"></i><span>Exit</span>'
-        : '<i class="fas fa-expand"></i><span>Fullscreen</span>';
-    setTimeout(() => {
+    isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                     document.mozFullScreenElement || document.msFullscreenElement);
+    
+    if (isFullscreen) {
+        document.body.className += ' fullscreen';
+    } else {
+        document.body.className = document.body.className.replace(' fullscreen', '');
+    }
+    
+    var fullscreenBtn = document.querySelector('.btn-fullscreen');
+    if (isFullscreen) {
+        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i><span>Exit</span>';
+    } else {
+        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i><span>Fullscreen</span>';
+    }
+    
+    setTimeout(function() {
         updateTextDimensions();
         resetPosition();
     }, 100);
 }
 
+// Fullscreen event listeners
 document.addEventListener('fullscreenchange', handleFullscreenChange);
 document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-document.addEventListener('msfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-function showStatus(message, duration = 2000) {
-    const status = document.getElementById('status');
+function showStatus(message, duration) {
+    duration = duration || 2000;
+    var status = document.getElementById('status');
     status.textContent = message;
     status.style.opacity = '1';
-    setTimeout(() => { status.style.opacity = '0'; }, duration);
+    
+    setTimeout(function() {
+        status.style.opacity = '0';
+    }, duration);
 }
 
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+// Keyboard event handler
+document.addEventListener('keydown', function(e) {
+    // Skip if typing in input
+    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+        return;
+    }
     
-    const key = e.key || String.fromCharCode(e.keyCode);
-    const keyCode = e.keyCode;
+    var key = e.key || String.fromCharCode(e.keyCode);
+    var keyCode = e.keyCode || e.which;
     
-    const keyMap = {
-        ' ': togglePlay,
-        'r': resetPosition, 'R': resetPosition,
-        'f': toggleFullscreen, 'F': toggleFullscreen,
-        'v': () => setMode('vertical'), 'V': () => setMode('vertical'),
-        'h': () => setMode('horizontal'), 'H': () => setMode('horizontal'),
-        'i': toggleInfiniteScroll, 'I': toggleInfiniteScroll,
-        'Escape': () => isFullscreen && toggleFullscreen()
-    };
-    
-    if (keyCode === 38) { // ArrowUp
-        e.preventDefault();
-        setSpeed(Math.min(500, currentSpeed + 10));
-    } else if (keyCode === 40) { // ArrowDown
-        e.preventDefault();
-        setSpeed(Math.max(10, currentSpeed - 10));
-    } else if (keyMap[key]) {
-        e.preventDefault();
-        keyMap[key]();
+    // Handle special keys
+    switch(keyCode) {
+        case 32: // Space
+            e.preventDefault();
+            togglePlay();
+            break;
+        case 82: // R
+        case 114: // r
+            e.preventDefault();
+            resetPosition();
+            break;
+        case 70: // F
+        case 102: // f
+            e.preventDefault();
+            toggleFullscreen();
+            break;
+        case 86: // V
+        case 118: // v
+            e.preventDefault();
+            setMode('vertical');
+            break;
+        case 72: // H
+        case 104: // h
+            e.preventDefault();
+            setMode('horizontal');
+            break;
+        case 73: // I
+        case 105: // i
+            e.preventDefault();
+            toggleInfiniteScroll();
+            break;
+        case 38: // Arrow Up
+            e.preventDefault();
+            setSpeed(Math.min(500, currentSpeed + 10));
+            break;
+        case 40: // Arrow Down
+            e.preventDefault();
+            setSpeed(Math.max(10, currentSpeed - 10));
+            break;
+        case 27: // Escape
+            if (isFullscreen) {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+            break;
     }
 });
 
 // Window resize handler
-window.addEventListener('resize', () => {
+window.addEventListener('resize', function() {
     updateTextDimensions();
     if (!isPlaying) {
         resetPosition();
@@ -548,7 +661,7 @@ window.addEventListener('resize', () => {
 });
 
 // Visibility change handler
-document.addEventListener('visibilitychange', () => {
+document.addEventListener('visibilitychange', function() {
     if (document.hidden && isPlaying) {
         togglePlay();
     }
@@ -556,12 +669,12 @@ document.addEventListener('visibilitychange', () => {
 
 // Initialize application
 function initializeApp() {
-    // Set default text if empty
+    // Set default text
     if (!textInput.value.trim()) {
         textInput.value = DEFAULT_TEXT;
     }
     
-    // Initialize all settings
+    // Initialize all components
     updateText();
     updateSpeed();
     updateSize();
@@ -570,39 +683,46 @@ function initializeApp() {
     updateBold();
     updateShadow();
     
-    // Set initial position
-    setTimeout(() => {
+    // Set initial position with delay for proper calculation
+    setTimeout(function() {
         updateTextDimensions();
         resetPosition();
     }, 100);
     
     showStatus('Ready - Press Space to play/pause, I for infinite mode', 3000);
     
-    console.log('🎯 Desktop Prompter initialized with fixed infinite scroll');
+    console.log('Desktop Prompter initialized - Edge compatible');
 }
 
-// Initialize on DOM ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-    initializeApp();
+// DOM Ready handler for older browsers
+function domReady(callback) {
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        callback();
+    } else {
+        document.addEventListener('DOMContentLoaded', callback);
+    }
 }
+
+// Initialize when DOM is ready
+domReady(initializeApp);
 
 // Additional initialization on window load
-window.addEventListener('load', () => {
+window.addEventListener('load', function() {
     setTimeout(initializeApp, 50);
 });
 
-// Clipboard paste event
-document.addEventListener('paste', (e) => {
+// Paste event handler
+document.addEventListener('paste', function(e) {
     if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
         e.preventDefault();
-        let text = '';
+        
+        var text = '';
         if (e.clipboardData) {
             text = e.clipboardData.getData('text/plain');
         } else if (window.clipboardData) {
             text = window.clipboardData.getData('Text');
         }
+        
         if (text) {
             textInput.value = text;
             updateText();
@@ -611,4 +731,4 @@ document.addEventListener('paste', (e) => {
     }
 });
 
-console.log('🚀 Desktop Prompter: Fixed infinite scroll system loaded');
+console.log('Desktop Prompter v2.0 - Edge Compatible with Fixed Infinite Scroll');
