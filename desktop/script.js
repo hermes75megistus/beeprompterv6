@@ -1,4 +1,4 @@
-// desktop/script.js - Simple and Working Animation
+// desktop/script.js - Fixed Infinite Scroll Animation
 
 // Global variables
 let isPlaying = false;
@@ -7,8 +7,10 @@ let currentSpeed = 50;
 let animationId = null;
 let textHeight = 0;
 let textWidth = 0;
-let startTime = null;
-let pausedTime = 0;
+let animationStartTime = null;
+let totalPausedTime = 0;
+let lastPauseTime = null;
+let currentScrollPosition = 0;
 let isMirrored = false;
 let isFullscreen = false;
 let infiniteScroll = false;
@@ -107,40 +109,75 @@ function updateTextDimensions() {
     document.body.removeChild(tempDiv);
 }
 
-// SIMPLE ANIMATION - NO COMPLICATIONS
+// FIXED ANIMATION FUNCTION - PROPER INFINITE SCROLL
 function animate(timestamp) {
     if (!isPlaying) return;
 
-    if (!startTime) {
-        startTime = timestamp - pausedTime;
+    // Initialize start time
+    if (!animationStartTime) {
+        animationStartTime = timestamp;
+        
+        // If we have a current position (from manual drag or pause), calculate the equivalent time offset
+        if (currentScrollPosition !== 0) {
+            const containerSize = currentMode === 'vertical' ? prompterContainer.offsetHeight : prompterContainer.offsetWidth;
+            const textSize = currentMode === 'vertical' ? textHeight : textWidth;
+            const totalDistance = containerSize + textSize;
+            
+            // Calculate how far we've already scrolled
+            const distanceScrolled = containerSize - currentScrollPosition;
+            
+            // Convert to time offset
+            const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+            const timeOffset = (distanceScrolled / effectiveSpeed) * 1000;
+            
+            // Apply the offset by adjusting the start time
+            animationStartTime = timestamp - timeOffset - totalPausedTime;
+        }
     }
     
-    const elapsed = timestamp - startTime;
+    // Calculate elapsed time
+    const elapsedTime = timestamp - animationStartTime - totalPausedTime;
+    
+    // Calculate speed (0 means maximum speed of 500px/s)
     const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
-    const distance = (elapsed / 1000) * effectiveSpeed;
+    
+    // Calculate distance traveled
+    const distanceTraveled = (elapsedTime / 1000) * effectiveSpeed;
     
     if (currentMode === 'vertical') {
         const containerHeight = prompterContainer.offsetHeight;
+        const totalDistance = containerHeight + textHeight;
         
         if (infiniteScroll) {
-            // INFINITE: Loop like mobile
-            const totalDistance = containerHeight + textHeight;
-            const position = containerHeight - (distance % totalDistance);
-            scrollingText.style.transform = isMirrored 
-                ? `scaleX(-1) translateX(50%) translateY(${position - containerHeight}px)`
-                : `translateX(-50%) translateY(${position - containerHeight}px)`;
-            scrollingText.style.top = containerHeight + 'px';
-        } else {
-            // SINGLE: Stop when text exits
-            const position = containerHeight - distance;
+            // INFINITE MODE: Continuous loop
+            // Calculate position within the cycle
+            const cyclePosition = distanceTraveled % totalDistance;
+            currentScrollPosition = containerHeight - cyclePosition;
             
-            if (position < -textHeight) {
-                // Text completely exited - STOP
+            // Apply transform
+            scrollingText.style.transform = isMirrored 
+                ? `scaleX(-1) translateX(50%) translateY(${currentScrollPosition - containerHeight}px)`
+                : `translateX(-50%) translateY(${currentScrollPosition - containerHeight}px)`;
+            scrollingText.style.top = containerHeight + 'px';
+            
+        } else {
+            // SINGLE MODE: Stop at the end
+            currentScrollPosition = containerHeight - distanceTraveled;
+            
+            // Check if text has completely exited
+            if (currentScrollPosition < -textHeight) {
+                // Stop animation
                 isPlaying = false;
+                animationStartTime = null;
+                totalPausedTime = 0;
+                lastPauseTime = null;
+                
                 const playBtn = document.getElementById('playBtn');
                 playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
                 playBtn.classList.remove('playing');
+                
                 showStatus('Text finished - click Reset to restart', 2000);
+                
                 if (animationId) {
                     cancelAnimationFrame(animationId);
                     animationId = null;
@@ -148,34 +185,46 @@ function animate(timestamp) {
                 return;
             }
             
+            // Apply transform
             scrollingText.style.transform = isMirrored 
-                ? `scaleX(-1) translateX(50%) translateY(${position - containerHeight}px)`
-                : `translateX(-50%) translateY(${position - containerHeight}px)`;
+                ? `scaleX(-1) translateX(50%) translateY(${currentScrollPosition - containerHeight}px)`
+                : `translateX(-50%) translateY(${currentScrollPosition - containerHeight}px)`;
             scrollingText.style.top = containerHeight + 'px';
         }
         
-    } else { // horizontal
+    } else { // horizontal mode
         const containerWidth = prompterContainer.offsetWidth;
+        const totalDistance = containerWidth + textWidth;
         
         if (infiniteScroll) {
-            // INFINITE: Loop like mobile
-            const totalDistance = containerWidth + textWidth;
-            const position = containerWidth - (distance % totalDistance);
-            scrollingText.style.transform = isMirrored 
-                ? `scaleX(-1) translateY(-50%) translateX(${position - containerWidth}px)`
-                : `translateY(-50%) translateX(${position - containerWidth}px)`;
-            scrollingText.style.left = containerWidth + 'px';
-        } else {
-            // SINGLE: Stop when text exits
-            const position = containerWidth - distance;
+            // INFINITE MODE: Continuous loop
+            const cyclePosition = distanceTraveled % totalDistance;
+            currentScrollPosition = containerWidth - cyclePosition;
             
-            if (position < -textWidth) {
-                // Text completely exited - STOP
+            // Apply transform
+            scrollingText.style.transform = isMirrored 
+                ? `scaleX(-1) translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`
+                : `translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`;
+            scrollingText.style.left = containerWidth + 'px';
+            
+        } else {
+            // SINGLE MODE: Stop at the end
+            currentScrollPosition = containerWidth - distanceTraveled;
+            
+            // Check if text has completely exited
+            if (currentScrollPosition < -textWidth) {
+                // Stop animation
                 isPlaying = false;
+                animationStartTime = null;
+                totalPausedTime = 0;
+                lastPauseTime = null;
+                
                 const playBtn = document.getElementById('playBtn');
                 playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
                 playBtn.classList.remove('playing');
+                
                 showStatus('Text finished - click Reset to restart', 2000);
+                
                 if (animationId) {
                     cancelAnimationFrame(animationId);
                     animationId = null;
@@ -183,13 +232,15 @@ function animate(timestamp) {
                 return;
             }
             
+            // Apply transform
             scrollingText.style.transform = isMirrored 
-                ? `scaleX(-1) translateY(-50%) translateX(${position - containerWidth}px)`
-                : `translateY(-50%) translateX(${position - containerWidth}px)`;
+                ? `scaleX(-1) translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`
+                : `translateY(-50%) translateX(${currentScrollPosition - containerWidth}px)`;
             scrollingText.style.left = containerWidth + 'px';
         }
     }
     
+    // Continue animation
     if (isPlaying) {
         animationId = requestAnimationFrame(animate);
     }
@@ -199,6 +250,7 @@ function updateText() {
     let text = textInput.value.trim();
     if (!text) {
         text = DEFAULT_TEXT;
+        textInput.value = DEFAULT_TEXT;
     }
     scrollingText.textContent = text;
     updateTextDimensions();
@@ -208,8 +260,10 @@ function updateText() {
 
 function clearText() {
     textInput.value = '';
-    updateText();
-    showStatus('Text cleared');
+    scrollingText.textContent = DEFAULT_TEXT;
+    updateTextDimensions();
+    resetPosition();
+    showStatus('Text cleared - using default text');
 }
 
 async function pasteFromClipboard() {
@@ -256,53 +310,66 @@ function togglePlay() {
         playBtn.classList.add('playing');
         showStatus('Playing', 1000);
         
-        if (!startTime) {
-            // First time playing - reset everything
-            startTime = null;
-            pausedTime = 0;
+        // Handle pause/resume timing
+        if (lastPauseTime !== null) {
+            const pauseDuration = performance.now() - lastPauseTime;
+            totalPausedTime += pauseDuration;
+            lastPauseTime = null;
         }
         
+        // Reset animation start time to recalculate from current position
+        animationStartTime = null;
+        
+        // Start animation
         animationId = requestAnimationFrame(animate);
         
     } else {
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-            animationId = null;
-        }
         playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
         playBtn.classList.remove('playing');
         showStatus('Paused', 1000);
         
-        // Save current progress
-        if (startTime) {
-            pausedTime = performance.now() - startTime;
+        // Record pause time
+        lastPauseTime = performance.now();
+        
+        // Stop animation
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
         }
     }
 }
 
 function resetPosition() {
-    // COMPLETE RESET
+    // Stop playing
     isPlaying = false;
-    startTime = null;
-    pausedTime = 0;
     
+    // Reset all timing variables
+    animationStartTime = null;
+    totalPausedTime = 0;
+    lastPauseTime = null;
+    currentScrollPosition = 0;
+    
+    // Cancel any running animation
     if (animationId) {
         cancelAnimationFrame(animationId);
         animationId = null;
     }
     
+    // Update play button
     const playBtn = document.getElementById('playBtn');
     playBtn.innerHTML = '<i class="fas fa-play"></i><span>Start</span>';
     playBtn.classList.remove('playing');
     
-    // Reset position to start
+    // Reset text position to start
     if (currentMode === 'vertical') {
-        scrollingText.style.top = prompterContainer.offsetHeight + 'px';
+        const containerHeight = prompterContainer.offsetHeight;
+        scrollingText.style.top = containerHeight + 'px';
         scrollingText.style.transform = isMirrored 
             ? 'scaleX(-1) translateX(50%)' 
             : 'translateX(-50%)';
     } else {
-        scrollingText.style.left = prompterContainer.offsetWidth + 'px';
+        const containerWidth = prompterContainer.offsetWidth;
+        scrollingText.style.left = containerWidth + 'px';
         scrollingText.style.transform = isMirrored 
             ? 'scaleX(-1) translateY(-50%)' 
             : 'translateY(-50%)';
@@ -319,13 +386,14 @@ function toggleInfiniteScroll() {
     if (infiniteScroll) {
         infiniteBtn.classList.add('active');
         infiniteBtn.innerHTML = '<i class="fas fa-infinity"></i><span>Infinite ✓</span>';
-        showStatus('Infinite scroll enabled', 1500);
+        showStatus('Infinite scroll enabled - text will loop continuously', 2000);
     } else {
         infiniteBtn.classList.remove('active');
         infiniteBtn.innerHTML = '<i class="fas fa-infinity"></i><span>Infinite</span>';
-        showStatus('Single scroll mode', 1500);
+        showStatus('Single scroll mode - text will stop at end', 2000);
     }
     
+    // Reset to apply the change
     resetPosition();
 }
 
@@ -333,6 +401,20 @@ function updateSpeed() {
     currentSpeed = parseInt(speedRange.value);
     document.getElementById('speedValue').textContent = currentSpeed;
     document.getElementById('speedIndicator').textContent = `Speed: ${currentSpeed} px/s`;
+    
+    // If playing, adjust timing to maintain smooth speed change
+    if (isPlaying && animationStartTime !== null) {
+        const now = performance.now();
+        const elapsedTime = now - animationStartTime - totalPausedTime;
+        
+        // Calculate current progress
+        const oldSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+        const distanceTraveled = (elapsedTime / 1000) * oldSpeed;
+        
+        // Adjust start time to maintain position with new speed
+        const newSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+        animationStartTime = now - (distanceTraveled / newSpeed * 1000) - totalPausedTime;
+    }
 }
 
 function setSpeed(speed) {
@@ -366,7 +448,11 @@ function updateMirror() {
     isMirrored = document.getElementById('mirrorCheckbox').checked;
     scrollingText.classList.toggle('mirrored', isMirrored);
     showStatus(`Mirror mode ${isMirrored ? 'on' : 'off'}`, 1000);
-    resetPosition();
+    
+    // Update transform while maintaining position
+    if (!isPlaying) {
+        resetPosition();
+    }
 }
 
 function updateBold() {
@@ -424,6 +510,7 @@ function showStatus(message, duration = 2000) {
     setTimeout(() => { status.style.opacity = '0'; }, duration);
 }
 
+// Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
     
@@ -452,49 +539,61 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// Window resize handler
 window.addEventListener('resize', () => {
     updateTextDimensions();
-    resetPosition();
+    if (!isPlaying) {
+        resetPosition();
+    }
 });
 
+// Visibility change handler
 document.addEventListener('visibilitychange', () => {
     if (document.hidden && isPlaying) {
         togglePlay();
     }
 });
 
+// Initialize application
 function initializeApp() {
+    // Set default text if empty
     if (!textInput.value.trim()) {
         textInput.value = DEFAULT_TEXT;
     }
     
-    resetPosition();
+    // Initialize all settings
+    updateText();
     updateSpeed();
     updateSize();
     updateColor();
     updateBackground();
     updateBold();
     updateShadow();
-    updateText();
     
+    // Set initial position
     setTimeout(() => {
         updateTextDimensions();
         resetPosition();
     }, 100);
     
-    showStatus('Ready - I key toggles Infinite/Single mode', 3000);
+    showStatus('Ready - Press Space to play/pause, I for infinite mode', 3000);
+    
+    console.log('🎯 Desktop Prompter initialized with fixed infinite scroll');
 }
 
+// Initialize on DOM ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeApp);
 } else {
     initializeApp();
 }
 
+// Additional initialization on window load
 window.addEventListener('load', () => {
     setTimeout(initializeApp, 50);
 });
 
+// Clipboard paste event
 document.addEventListener('paste', (e) => {
     if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
         e.preventDefault();
@@ -512,4 +611,4 @@ document.addEventListener('paste', (e) => {
     }
 });
 
-console.log('🎯 Desktop Prompter: Simple and working animation system')
+console.log('🚀 Desktop Prompter: Fixed infinite scroll system loaded');
