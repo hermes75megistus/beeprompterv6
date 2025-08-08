@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeePrompter - Professional Teleprompter Application</title>
+    <meta name="description" content="Professional teleprompter application for your video shoots, presentations and live streams. Mobile and desktop support.">
+    <link rel="canonical" href="https://www.beeprompter.com/">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="theme-color" content="#00ff88">
+    
+    <!-- SEO Meta Tags -->
+    <meta property="og:title" content="BeePrompter - Professional Teleprompter">
+    <meta property="og:description" content="Free professional teleprompter app for content creators, presenters and educators.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.beeprompter.com/">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <!-- Google AdSense - Replace with your Publisher ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Flying Bee Animation - Logo pozisyonundan başlıyor -->
+    <div class="flying-bee" id="flyingBee">
+        <img src="https://beeprompter.com/assets/icons/icon-144x144.png" alt="Bee" style="width: 40px; height: 40px; transform: scaleX(-1);">
+    </div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="/" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                    <img src="https://beeprompter.com/assets/icons/icon-144x144.png" alt="BeePrompter Logo" style="width: 32px; height: 32px; transform: scaleX(-1);">
+                    <h1>BeePrompter</h1>
+                </a>
+            </div>
+            <nav class="nav">
+                <a href="#features">Features</a>
+                <a href="#how-to-use">How to Use</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <!-- Top Banner Ad - 728x90 Leaderboard -->
+            <div class="ad-banner ad-top">
+                <div class="ad-placeholder">
+                    <i class="fas fa-ad"></i>
+                    <span>Top Banner Ad Space</span>
+                </div>
+            </div>
+
+            <div class="hero-content">
+                <h2>Professional Teleprompter Experience</h2>
+                <p>The perfect prompter application for your video shoots, presentations and live broadcasts</p>
+                
+                <div class="platform-selector">
+                    <div class="platform-cards">
+                        <div class="platform-card mobile-card" onclick="goToMobile()">
+                            <div class="card-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <h3>Mobile Prompter</h3>
+                            <p>Prompter experience optimized for your phone</p>
+                            <ul>
+                                <li>✓ Vertical scrolling</li>
+                                <li>✓ Touch controls</li>
+                                <li>✓ Mirror mode</li>
+                                <li>✓ Adjustable speed</li>
+                                <li>✓ Manual position with touch</li>
+                                <li>✓ Hidden mode</li>
+                            </ul>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-mobile-alt"></i>
+                                Use Mobile Version
+                            </button>
+                        </div>
+
+                        <div class="platform-card desktop-card" onclick="goToDesktop()">
+                            <div class="card-icon">
+                                <i class="fas fa-desktop"></i>
+                            </div>
+                            <h3>Desktop Prompter</h3>
+                            <p>Advanced prompter features for your computer</p>
+                            <ul>
+                                <li>✓ Vertical & Horizontal scrolling</li>
+                                <li>✓ Keyboard shortcuts</li>
+                                <li>✓ Multi-view modes</li>
+                                <li>✓ Advanced controls</li>
+                                <li>✓ File upload support</li>
+                                <li>✓ Fullscreen mode</li>
+                            </ul>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-desktop"></i>
+                                Use Desktop Version
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Device Info Card -->
+                    <div id="platformInfo" style="margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 15px; border: 2px solid #00ff88;">
+                        <h4 style="color: #00ff88; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-info-circle"></i>
+                            Device Information
+                        </h4>
+                        <p id="deviceInfo" style="margin: 0; opacity: 0.9;"></p>
+                    </div>
+                </div>
+
+                <!-- Medium Rectangle Ad - 300x250 -->
+                <div class="ad-banner ad-middle">
+                    <div class="ad-placeholder">
+                        <i class="fas fa-ad"></i>
+                        <span>Medium Rectangle Ad Space</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h3>Adjustable Speed</h3>
+                    <p>Set text flow speed according to your reading pace. Precise control from 0-500 px/s range.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-palette"></i>
+                    <h3>Customizable Appearance</h3>
+                    <p>Font size, color and style options. Customize the prompter to your preference.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mirror"></i>
+                    <h3>Mirror Mode</h3>
+                    <p>Mirror view for prompter glass usage. Ideal for professional video shoots.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-file-upload"></i>
+                    <h3>File Support</h3>
+                    <p>Upload TXT files, paste from clipboard or type directly. Multiple input options.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-arrows-alt"></i>
+                    <h3>Multi-Direction Support</h3>
+                    <p>Vertical and horizontal scrolling options. Advanced controls in desktop version.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-eye-slash"></i>
+                    <h3>Hidden Mode</h3>
+                    <p>Hide controls during shooting. Minimal interface for full focus.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-hand-pointer"></i>
+                    <h3>Manual Position (Mobile)</h3>
+                    <p>Manually adjust text to desired position with touch. Precise control.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-keyboard"></i>
+                    <h3>Keyboard Shortcuts</h3>
+                    <p>Space: Play/Pause, F: Fullscreen, V/H: Change mode and more.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Manual Platform Selection</h3>
+                    <p>Recognizes your device and makes suggestions, but the final choice is yours.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How to Use Section -->
+    <section id="how-to-use" class="how-to-use">
+        <div class="container">
+            <h2>How to Use</h2>
+            
+            <!-- Sidebar Ad - 160x600 Wide Skyscraper -->
+            <div class="ad-sidebar">
+                <div class="ad-vertical ad-placeholder">
+                    <i class="fas fa-ad"></i>
+                    <span>Sidebar Ad Space</span>
+                </div>
+            </div>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Choose the Right Platform</h3>
+                        <p>The system recognizes your device and makes suggestions, but the final choice is yours. You can manually select the platform you prefer.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Prepare Your Text</h3>
+                        <p>Upload a TXT file, paste from clipboard or type directly. One-touch clipboard paste feature on mobile.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Optimize Settings</h3>
+                        <p>Adjust speed, font size, color and appearance settings to your preference. Shoot professionally with mirror mode.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Start Your Shoot</h3>
+                        <p>Press play or use spacebar. Hide controls with hidden mode for full focus.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pro Tips -->
+            <div style="margin-top: 50px; padding: 30px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.05)); border-radius: 15px; border: 2px solid rgba(0, 255, 136, 0.3);">
+                <h3 style="color: #00ff88; margin-bottom: 20px; text-align: center;">
+                    <i class="fas fa-lightbulb"></i> Pro Tips
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px;">
+                        <h4 style="color: #00ff88; margin-bottom: 10px;">📱 Mobile Tips</h4>
+                        <ul style="color: #333; margin: 0; padding-left: 20px;">
+                            <li>Single touch to play/pause</li>
+                            <li>Horizontal swipe to open/close controls</li>
+                            <li>Touch for manual position adjustment</li>
+                            <li>H key for hidden mode</li>
+                        </ul>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px;">
+                        <h4 style="color: #ff6b6b; margin-bottom: 10px;">🖥️ Desktop Tips</h4>
+                        <ul style="color: #333; margin: 0; padding-left: 20px;">
+                            <li>F11 for fullscreen mode</li>
+                            <li>V/H keys to change mode</li>
+                            <li>Ctrl+D for desktop shortcut</li>
+                            <li>R key to quickly reset</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-Article Ad -->
+            <div class="ad-banner" style="margin: 40px 0;">
+                <div class="ad-placeholder">
+                    <i class="fas fa-ad"></i>
+                    <span>In-Article Ad Space</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <!-- Bottom Banner Ad - 728x90 -->
+            <div class="ad-banner ad-bottom">
+                <div class="ad-placeholder">
+                    <i class="fas fa-ad"></i>
+                    <span>Bottom Banner Ad Space</span>
+                </div>
+            </div>
+
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+                        <img src="https://beeprompter.com/assets/icons/icon-144x144.png" alt="BeePrompter Logo" style="width: 24px; height: 24px; transform: scaleX(-1);">
+                        <span>BeePrompter</span>
+                    </div>
+                    <p>Professional teleprompter application</p>
+                    <p style="margin-top: 15px; font-size: 14px; opacity: 0.8;">
+                        <i class="fas fa-code"></i> Open source and free
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Access</h4>
+                    <ul>
+                        <li><a href="mobile/">📱 Mobile Prompter</a></li>
+                        <li><a href="desktop/">🖥️ Desktop Prompter</a></li>
+                        <li><a href="#features">✨ Features</a></li>
+                        <li><a href="#how-to-use">📖 User Guide</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Platform Support</h4>
+                    <ul>
+                        <li><i class="fab fa-android"></i> Android</li>
+                        <li><i class="fab fa-apple"></i> iOS</li>
+                        <li><i class="fab fa-windows"></i> Windows</li>
+                        <li><i class="fab fa-apple"></i> macOS</li>
+                        <li><i class="fab fa-linux"></i> Linux</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> support@beeprompter.com</li>
+                        <li><i class="fab fa-github"></i> GitHub Repository</li>
+                        <li><i class="fas fa-bug"></i> Bug Report</li>
+                        <li><i class="fas fa-star"></i> Feedback</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BeePrompter. All rights reserved. | 
+                   <a href="privacy.html" style="color: #00ff88; text-decoration: none;">Privacy Policy</a> | 
+                   <a href="terms.html" style="color: #00ff88; text-decoration: none;">Terms of Service</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AdSense Auto Ads (Optional) -->
+    <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+        google_ad_client: "ca-pub-XXXXXXXXXXXXXXXX",
+        enable_page_level_ads: true
+    });
+    </script>
+
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/admin-auth.js"></script>
+    <script src="assets/js/ad-manager.js"></script>
+    <script src="assets/js/google-ads-manager.js"></script>
+    
+    <!-- Initialize Google Ads -->
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+    
+    <!-- Device Info Script (English) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deviceInfo = document.getElementById('deviceInfo');
+            
+            let deviceText = '';
+            
+            if (/Android/i.test(navigator.userAgent)) {
+                deviceText = '🤖 Android Device - Mobile Prompter recommended';
+                if (!(/Mobile/i.test(navigator.userAgent))) {
+                    deviceText = '📱 Android Tablet - Both versions compatible';
+                }
+            } else if (/iPhone|iPod/i.test(navigator.userAgent)) {
+                deviceText = '📱 iPhone - Mobile Prompter recommended';
+            } else if (/iPad/i.test(navigator.userAgent)) {
+                deviceText = '📱 iPad - Both versions compatible';
+            } else if (/Macintosh|MacIntel/i.test(navigator.userAgent)) {
+                if ('ontouchend' in document) {
+                    deviceText = '📱 iPad (Safari) - Both versions compatible';
+                } else {
+                    deviceText = '🍎 macOS - Desktop Prompter recommended';
+                }
+            } else if (/Windows/i.test(navigator.userAgent)) {
+                deviceText = '🪟 Windows - Desktop Prompter recommended';
+            } else if (/Linux/i.test(navigator.userAgent)) {
+                deviceText = '🐧 Linux - Desktop Prompter recommended';
+            } else {
+                deviceText = '💻 Unknown Device - Choose your preferred platform';
+            }
+            
+            deviceInfo.textContent = deviceText;
+            
+            const updateScreenInfo = () => {
+                const screenInfo = ` | 📏 ${window.innerWidth}x${window.innerHeight}px`;
+                deviceInfo.textContent = deviceText + screenInfo;
+            };
+            
+            updateScreenInfo();
+            window.addEventListener('resize', updateScreenInfo);
+            
+            // Logo pozisyonunu al ve arıyı tam aynı yere yerleştir
+            const logo = document.querySelector('.logo img');
+            const logoRect = logo.getBoundingClientRect();
+            
+            // Uçan arıyı TAMAMEN logo pozisyonuna yerleştir (çakışık)
+            const flyingBee = document.getElementById('flyingBee');
+            flyingBee.style.left = logoRect.left + 'px';
+            flyingBee.style.top = logoRect.top + 'px';
+            flyingBee.style.transform = 'scaleX(-1)'; // Logo ile aynı yönde
+            
+            console.log('🐝 Bee positioned at logo:', logoRect.left, logoRect.top);
+            
+            // Remove flying bee after animation
+            setTimeout(() => {
+                const flyingBee = document.getElementById('flyingBee');
+                if (flyingBee) {
+                    flyingBee.remove();
+                }
+            }, 10000);
+        });
+    </script>
+
+    <!-- CSS for bee animation starting from logo position -->
+    <style>
+        /* Flying Bee Animation - Logo pozisyonundan başlayarak smooth yol */
+        .flying-bee {
+            position: fixed;
+            z-index: 10000;
+            pointer-events: none;
+            /* LOGO POZİSYONUNDA BAŞLIYOR - JavaScript ile ayarlanacak */
+            left: 20px; /* Varsayılan değer, JavaScript ile güncellenecek */
+            top: 20px;  /* Varsayılan değer, JavaScript ile güncellenecek */
+            animation: flyFromLogoPosition 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        
+        @keyframes flyFromLogoPosition {
+            0% {
+                /* Logo pozisyonunda başlar - tam çakışık */
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            5% {
+                /* Logoda 0.5 saniye bekler */
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            15% {
+                left: 20%;
+                top: 40%;
+                transform: translateY(-20px) rotate(-8deg) scale(1.1);
+            }
+            30% {
+                left: 35%;
+                top: 25%;
+                transform: translateY(-30px) rotate(12deg) scale(0.95);
+            }
+            45% {
+                left: 50%;
+                top: 60%;
+                transform: translateY(10px) rotate(-5deg) scale(1.05);
+            }
+            60% {
+                left: 65%;
+                top: 30%;
+                transform: translateY(-25px) rotate(10deg) scale(0.9);
+            }
+            75% {
+                left: 80%;
+                top: 45%;
+                transform: translateY(-5px) rotate(-3deg) scale(1.08);
+            }
+            90% {
+                left: 95%;
+                top: 35%;
+                transform: translateY(-15px) rotate(7deg) scale(0.98);
+            }
+            100% {
+                left: calc(100% + 80px);
+                top: 50%;
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 0;
+            }
+        }
+    </style>
+</body>
+</html><p>The system recognizes your device and makes suggestions, but the final choice is yours. You can manually select the platform you prefer.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Prepare Your Text</h3>
+                        <p>Upload a TXT file, paste from clipboard or type directly. One-touch clipboard paste feature on mobile.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Optimize Settings</h3>
+                        <p>Adjust speed, font size, color and appearance settings to your preference. Shoot professionally with mirror mode.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Start Your Shoot</h3>
+                        <p>Press play or use spacebar. Hide controls with hidden mode for full focus.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pro Tips -->
+            <div style="margin-top: 50px; padding: 30px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.05)); border-radius: 15px; border: 2px solid rgba(0, 255, 136, 0.3);">
+                <h3 style="color: #00ff88; margin-bottom: 20px; text-align: center;">
+                    <i class="fas fa-lightbulb"></i> Pro Tips
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px;">
+                        <h4 style="color: #00ff88; margin-bottom: 10px;">📱 Mobile Tips</h4>
+                        <ul style="color: #333; margin: 0; padding-left: 20px;">
+                            <li>Single touch to play/pause</li>
+                            <li>Horizontal swipe to open/close controls</li>
+                            <li>Touch for manual position adjustment</li>
+                            <li>H key for hidden mode</li>
+                        </ul>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px;">
+                        <h4 style="color: #ff6b6b; margin-bottom: 10px;">🖥️ Desktop Tips</h4>
+                        <ul style="color: #333; margin: 0; padding-left: 20px;">
+                            <li>F11 for fullscreen mode</li>
+                            <li>V/H keys to change mode</li>
+                            <li>Ctrl+D for desktop shortcut</li>
+                            <li>R key to quickly reset</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-Article Ad -->
+            <div class="ad-banner" style="margin: 40px 0;">
+                <div class="ad-placeholder">
+                    <i class="fas fa-ad"></i>
+                    <span>In-Article Ad Space</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <!-- Bottom Banner Ad - 728x90 -->
+            <div class="ad-banner ad-bottom">
+                <div class="ad-placeholder">
+                    <i class="fas fa-ad"></i>
+                    <span>Bottom Banner Ad Space</span>
+                </div>
+            </div>
+
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+                        <span style="font-size: 1.5rem; transform: scaleX(-1);">🐝</span>
+                        <span>BeePrompter</span>
+                    </div>
+                    <p>Professional teleprompter application</p>
+                    <p style="margin-top: 15px; font-size: 14px; opacity: 0.8;">
+                        <i class="fas fa-code"></i> Open source and free
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Access</h4>
+                    <ul>
+                        <li><a href="mobile/">📱 Mobile Prompter</a></li>
+                        <li><a href="desktop/">🖥️ Desktop Prompter</a></li>
+                        <li><a href="#features">✨ Features</a></li>
+                        <li><a href="#how-to-use">📖 User Guide</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Platform Support</h4>
+                    <ul>
+                        <li><i class="fab fa-android"></i> Android</li>
+                        <li><i class="fab fa-apple"></i> iOS</li>
+                        <li><i class="fab fa-windows"></i> Windows</li>
+                        <li><i class="fab fa-apple"></i> macOS</li>
+                        <li><i class="fab fa-linux"></i> Linux</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> support@beeprompter.com</li>
+                        <li><i class="fab fa-github"></i> GitHub Repository</li>
+                        <li><i class="fas fa-bug"></i> Bug Report</li>
+                        <li><i class="fas fa-star"></i> Feedback</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BeePrompter. All rights reserved. | 
+                   <a href="privacy.html" style="color: #00ff88; text-decoration: none;">Privacy Policy</a> | 
+                   <a href="terms.html" style="color: #00ff88; text-decoration: none;">Terms of Service</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AdSense Auto Ads (Optional) -->
+    <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+        google_ad_client: "ca-pub-XXXXXXXXXXXXXXXX",
+        enable_page_level_ads: true
+    });
+    </script>
+
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/admin-auth.js"></script>
+    <script src="assets/js/ad-manager.js"></script>
+    <script src="assets/js/google-ads-manager.js"></script>
+    
+    <!-- Initialize Google Ads -->
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+    
+    <!-- Device Info Script (English) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deviceInfo = document.getElementById('deviceInfo');
+            
+            let deviceText = '';
+            
+            if (/Android/i.test(navigator.userAgent)) {
+                deviceText = '🤖 Android Device - Mobile Prompter recommended';
+                if (!(/Mobile/i.test(navigator.userAgent))) {
+                    deviceText = '📱 Android Tablet - Both versions compatible';
+                }
+            } else if (/iPhone|iPod/i.test(navigator.userAgent)) {
+                deviceText = '📱 iPhone - Mobile Prompter recommended';
+            } else if (/iPad/i.test(navigator.userAgent)) {
+                deviceText = '📱 iPad - Both versions compatible';
+            } else if (/Macintosh|MacIntel/i.test(navigator.userAgent)) {
+                if ('ontouchend' in document) {
+                    deviceText = '📱 iPad (Safari) - Both versions compatible';
+                } else {
+                    deviceText = '🍎 macOS - Desktop Prompter recommended';
+                }
+            } else if (/Windows/i.test(navigator.userAgent)) {
+                deviceText = '🪟 Windows - Desktop Prompter recommended';
+            } else if (/Linux/i.test(navigator.userAgent)) {
+                deviceText = '🐧 Linux - Desktop Prompter recommended';
+            } else {
+                deviceText = '💻 Unknown Device - Choose your preferred platform';
+            }
+            
+            deviceInfo.textContent = deviceText;
+            
+            const updateScreenInfo = () => {
+                const screenInfo = ` | 📏 ${window.innerWidth}x${window.innerHeight}px`;
+                deviceInfo.textContent = deviceText + screenInfo;
+            };
+            
+            updateScreenInfo();
+            window.addEventListener('resize', updateScreenInfo);
+            
+            // Remove flying bee after animation
+            setTimeout(() => {
+                const flyingBee = document.getElementById('flyingBee');
+                if (flyingBee) {
+                    flyingBee.remove();
+                }
+            }, 10000);
+        });
+    </script>
+
+    <!-- CSS for bee animation and logo fix -->
+    <style>
+        /* Flying Bee Animation - Smooth and Realistic Path */
+        .flying-bee {
+            position: fixed;
+            top: 50%;
+            left: -80px;
+            font-size: 2.5rem;
+            z-index: 10000;
+            pointer-events: none;
+            animation: flyBeeRealistic 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        
+        @keyframes flyBeeRealistic {
+            0% {
+                left: -80px;
+                top: 65%;
+                transform: translateY(-50%) rotate(15deg) scale(1);
+            }
+            12% {
+                left: 15%;
+                top: 40%;
+                transform: translateY(-50%) rotate(-8deg) scale(1.1);
+            }
+            25% {
+                left: 28%;
+                top: 30%;
+                transform: translateY(-50%) rotate(12deg) scale(0.95);
+            }
+            38% {
+                left: 42%;
+                top: 58%;
+                transform: translateY(-50%) rotate(-5deg) scale(1.05);
+            }
+            50% {
+                left: 55%;
+                top: 35%;
+                transform: translateY(-50%) rotate(10deg) scale(0.9);
+            }
+            62% {
+                left: 68%;
+                top: 50%;
+                transform: translateY(-50%) rotate(-3deg) scale(1.08);
+            }
+            75% {
+                left: 80%;
+                top: 38%;
+                transform: translateY(-50%) rotate(7deg) scale(0.98);
+            }
+            88% {
+                left: 92%;
+                top: 55%;
+                transform: translateY(-50%) rotate(-2deg) scale(1.02);
+            }
+            100% {
+                left: calc(100% + 80px);
+                top: 48%;
+                transform: translateY(-50%) rotate(0deg) scale(1);
+            }
+        }
+        
+        /* Logo bee icons - horizontal flip */
+        .logo span[style*="🐝"] {
+            display: inline-block;
+            transform: scaleX(-1) !important;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,492 @@
+/* mobile/styles.css - Orijinal mobil uygulama CSS'i */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.prompter-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.scrolling-text {
+    position: absolute;
+    white-space: normal;
+    font-size: 32px;
+    font-weight: bold;
+    color: #00ff88;
+    width: 90%;
+    left: 50%;
+    top: 100vh;
+    transform: translateX(-50%);
+    text-align: center;
+    line-height: 1.4;
+    word-break: break-word;
+    text-shadow: 0 0 15px rgba(0, 255, 136, 0.7);
+    padding: 20px;
+    transition: none;
+    will-change: transform;
+}
+
+.scrolling-text.mirrored {
+    transform: scaleX(-1) translateX(50%);
+}
+
+.controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.98);
+    padding: 15px;
+    border-top: 2px solid #00ff88;
+    display: none;
+    z-index: 1001;
+    box-shadow: 0 -5px 30px rgba(0, 255, 136, 0.3);
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.controls.visible {
+    display: block;
+    transform: translateY(0);
+}
+
+.control-section {
+    margin-bottom: 15px;
+}
+
+.control-section:last-child {
+    margin-bottom: 0;
+}
+
+.control-section h3 {
+    color: #00ff88;
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.control-row {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.control-row label {
+    color: #00ff88;
+    font-size: 13px;
+    font-weight: bold;
+    min-width: 50px;
+}
+
+.control-row input, .control-row select, .control-row button, .control-row textarea {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #00ff88;
+    color: #00ff88;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    flex: 1;
+    min-height: 44px;
+}
+
+.control-row textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.4;
+}
+
+.control-row input[type="file"] {
+    color: #888;
+    padding: 8px;
+}
+
+.control-row input[type="range"] {
+    height: 44px;
+    -webkit-appearance: none;
+    background: transparent;
+}
+
+.control-row input[type="range"]::-webkit-slider-track {
+    background: #333;
+    height: 8px;
+    border-radius: 4px;
+}
+
+.control-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background: #00ff88;
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.control-row input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    flex: none;
+    accent-color: #00ff88;
+}
+
+.control-row button {
+    background: #00ff88;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 15px 20px;
+    font-size: 16px;
+    border: none;
+    touch-action: manipulation;
+}
+
+.control-row button:active {
+    background: #00cc6a;
+    transform: scale(0.98);
+}
+
+.control-row button.active {
+    background: #ff6600;
+    box-shadow: 0 0 20px rgba(255, 102, 0, 0.5);
+}
+
+.paste-area {
+    background: rgba(0, 20, 0, 0.8);
+    border: 2px dashed #00ff88;
+    padding: 20px;
+    text-align: center;
+    color: #00ff88;
+    cursor: pointer;
+    margin: 10px 0;
+    border-radius: 8px;
+    transition: all 0.3s;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    touch-action: manipulation;
+}
+
+.paste-area:active {
+    background: rgba(0, 40, 0, 0.8);
+    border-color: #00cc6a;
+    transform: scale(0.98);
+}
+
+.paste-area.pasting {
+    background: rgba(0, 40, 20, 0.8);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 255, 136, 0.3);
+    border: 2px solid #00ff88;
+    color: #00ff88;
+    padding: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 1002;
+    transition: all 0.2s;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    touch-action: manipulation;
+}
+
+.toggle-btn:active {
+    background: rgba(0, 255, 136, 0.5);
+    transform: scale(0.95);
+}
+
+.toggle-btn.visible {
+    background: rgba(0, 255, 136, 0.6);
+}
+
+.file-info {
+    color: #888;
+    font-size: 11px;
+    margin-top: 5px;
+    text-align: center;
+}
+
+.status {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    color: #00ff88;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    border: 2px solid #00ff88;
+    z-index: 1002;
+    max-width: calc(100vw - 100px);
+    word-wrap: break-word;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.status.show {
+    opacity: 1;
+}
+
+.speed-indicator {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    color: #00ff88;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border: 2px solid #00ff88;
+    z-index: 1002;
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.speed-indicator.show {
+    opacity: 1;
+}
+
+.value-display {
+    color: #fff;
+    font-weight: bold;
+    min-width: 60px;
+    text-align: right;
+    font-size: 12px;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.button-group button {
+    flex: 1;
+    min-width: 100px;
+}
+
+/* Üst kontroller - sağ ve sol üst köşelere yerleştirildi */
+.top-controls {
+    position: fixed;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    z-index: 1001;
+    padding: 0 20px;
+}
+
+.top-controls.hidden {
+    display: none;
+}
+
+.top-btn {
+    background: rgba(0, 255, 136, 0.2);
+    border: 2px solid #00ff88;
+    color: #00ff88;
+    padding: 10px 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+    touch-action: manipulation;
+    font-weight: bold;
+    min-width: 60px;
+}
+
+.top-btn:active {
+    background: rgba(0, 255, 136, 0.4);
+    transform: scale(0.95);
+}
+
+.top-btn.active {
+    background: rgba(255, 102, 0, 0.3);
+    border-color: #ff6600;
+    color: #ff6600;
+}
+
+.top-btn.mirror-active {
+    background: rgba(102, 255, 255, 0.3);
+    border-color: #66ffff;
+    color: #66ffff;
+}
+
+/* Mini kontroller kaldırıldı */
+.mini-controls {
+    display: none;
+}
+
+/* Gizli mod */
+.hidden-mode .controls,
+.hidden-mode .toggle-btn,
+.hidden-mode .status,
+.hidden-mode .speed-indicator,
+.hidden-mode .top-controls {
+    display: none !important;
+}
+
+.hidden-mode {
+    cursor: none;
+}
+
+/* Touch feedback */
+.touch-feedback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 255, 136, 0.2);
+    border: 2px solid #00ff88;
+    color: #00ff88;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    text-align: center;
+}
+
+.touch-feedback.show {
+    opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 360px) {
+    .scrolling-text {
+        font-size: 24px;
+        width: 95%;
+        padding: 10px;
+    }
+    
+    .controls {
+        padding: 10px;
+    }
+    
+    .control-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .control-row label {
+        min-width: auto;
+        text-align: center;
+    }
+    
+    .value-display {
+        text-align: center;
+    }
+
+    .button-group button {
+        min-width: 80px;
+    }
+
+    .top-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+        min-width: 50px;
+    }
+}
+
+@media (min-width: 768px) {
+    .scrolling-text {
+        font-size: 40px;
+        width: 80%;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .scrolling-text {
+        font-size: 28px;
+    }
+    
+    .controls {
+        max-height: 70vh;
+    }
+
+    .top-controls {
+        top: 10px;
+        padding: 0 10px;
+    }
+
+    .toggle-btn {
+        bottom: 10px;
+    }
+
+    .status {
+        top: 10px;
+    }
+}
+
+@media (display-mode: standalone) {
+    .status {
+        top: 40px;
+    }
+    
+    .toggle-btn {
+        bottom: 40px;
+    }
+
+    .top-controls {
+        top: 40px;
+        padding: 0 40px;
+    }
+} 

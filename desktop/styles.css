@@ -1,0 +1,929 @@
+/* desktop/styles.css - Desktop Prompter CSS with Edge Compatibility */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: #000;
+    color: #fff;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+    -ms-user-select: none; /* Edge support */
+    -webkit-user-select: none;
+}
+
+/* Top Ad Banner - Full Width */
+.ad-banner-top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: rgba(0, 0, 0, 0.9);
+    border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.ad-banner-top .ad-placeholder {
+    width: 728px;
+    height: 90px;
+    max-width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 12px;
+    gap: 8px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.ad-banner-top .ad-placeholder:hover {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+/* Bottom Ad Banner - Full Width */
+.ad-banner-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: rgba(0, 0, 0, 0.9);
+    border-top: 1px solid rgba(0, 255, 136, 0.2);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.ad-banner-bottom .ad-placeholder {
+    width: 728px;
+    height: 90px;
+    max-width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 12px;
+    gap: 8px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.ad-banner-bottom .ad-placeholder:hover {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+/* Status Bar */
+.status-bar {
+    position: fixed;
+    top: 90px;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.9);
+    border-bottom: 2px solid #00ff88;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 20px;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* Safari support */
+}
+
+.status, .mode-indicator, .speed-indicator {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid #00ff88;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: #00ff88;
+    font-weight: bold;
+}
+
+.mode-indicator {
+    border-color: #0099ff;
+    color: #0099ff;
+    background: rgba(0, 153, 255, 0.1);
+}
+
+.speed-indicator {
+    border-color: #ff6600;
+    color: #ff6600;
+    background: rgba(255, 102, 0, 0.1);
+    margin-left: auto;
+}
+
+/* Prompter Container */
+.prompter-container {
+    position: fixed;
+    top: 130px;
+    left: 400px;
+    right: 150px;
+    bottom: 90px;
+    background: #000;
+    overflow: hidden;
+    z-index: 100;
+    transition: left 0.3s ease;
+}
+
+.prompter-container.fullscreen {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2000;
+}
+
+/* Scrolling Text */
+.scrolling-text {
+    position: absolute;
+    color: #00ff88;
+    font-size: 48px;
+    font-weight: bold;
+    line-height: 1.4;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+    transition: all 0.3s ease;
+    will-change: transform;
+    white-space: nowrap;
+}
+
+/* Vertical Mode */
+.vertical-text {
+    width: 90%;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+    padding: 0 20px;
+}
+
+/* Horizontal Mode */
+.horizontal-text {
+    width: auto;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: left;
+    white-space: nowrap;
+    font-size: 64px;
+    padding: 20px 0;
+}
+
+.horizontal-text.mirrored {
+    transform: scaleX(-1) translateY(-50%);
+    -ms-transform: scaleX(-1) translateY(-50%); /* Edge support */
+}
+
+.vertical-text.mirrored {
+    transform: scaleX(-1) translateX(50%);
+    -ms-transform: scaleX(-1) translateX(50%); /* Edge support */
+}
+
+/* Control Panel */
+.control-panel {
+    position: fixed;
+    top: 130px;
+    left: 0;
+    width: 400px;
+    bottom: 90px;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border-right: 2px solid #00ff88;
+    z-index: 1001;
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.control-panel.minimized {
+    transform: translateX(-350px);
+}
+
+/* Enhanced Scrollbar for Edge compatibility */
+.control-panel::-webkit-scrollbar {
+    width: 20px;
+}
+
+.control-panel::-webkit-scrollbar-track {
+    background: #2c3e50;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.control-panel::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #00ff88, #00cc6a);
+    border-radius: 10px;
+    border: 3px solid #2c3e50;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.control-panel::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #00cc6a, #00aa55);
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+}
+
+.control-panel::-webkit-scrollbar-corner {
+    background: #2c3e50;
+}
+
+/* IE/Edge scrollbar styling */
+.control-panel {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    scrollbar-face-color: #00ff88;
+    scrollbar-track-color: #2c3e50;
+}
+
+/* Panel Header */
+.panel-header {
+    background: linear-gradient(45deg, #00ff88, #00cc6a);
+    color: #000;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.panel-header h2 {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.header-buttons .btn {
+    padding: 6px 8px;
+    font-size: 12px;
+    min-width: auto;
+    height: 28px;
+}
+
+/* Top Ad Area in Panel */
+.ad-panel-top {
+    margin: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+    text-align: center;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Panel Content */
+.panel-content {
+    padding: 15px;
+}
+
+.control-group {
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-group h3 {
+    color: #00ff88;
+    margin-bottom: 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Buttons */
+.btn {
+    background: linear-gradient(45deg, #00ff88, #00cc6a);
+    color: #000;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    height: 32px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn:hover {
+    background: linear-gradient(45deg, #00cc6a, #00aa55);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 255, 136, 0.3);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-home {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+}
+
+.btn-home:hover {
+    background: linear-gradient(45deg, #2980b9, #1f4e79);
+}
+
+.btn-minimize {
+    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+}
+
+.btn-minimize:hover {
+    background: linear-gradient(45deg, #7f8c8d, #6c7b7d);
+}
+
+.btn-play.playing {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+}
+
+.btn-play.playing:hover {
+    background: linear-gradient(45deg, #c0392b, #a93226);
+}
+
+.btn-clear {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+}
+
+.btn-clear:hover {
+    background: linear-gradient(45deg, #c0392b, #a93226);
+}
+
+/* Mode Buttons */
+.mode-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.mode-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 12px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    height: auto;
+    min-height: 80px;
+}
+
+.mode-btn i {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.mode-btn span {
+    font-weight: bold;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.mode-btn small {
+    font-size: 10px;
+    opacity: 0.8;
+    line-height: 1.1;
+}
+
+.mode-btn.active {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: #00ff88;
+    color: #00ff88;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.mode-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Input Elements */
+textarea {
+    width: 100%;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #fff;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    resize: vertical;
+    line-height: 1.3;
+}
+
+textarea:focus {
+    border-color: #00ff88;
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+}
+
+select {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 13px;
+    width: 100%;
+    height: 32px;
+}
+
+select:focus {
+    border-color: #00ff88;
+    outline: none;
+}
+
+/* Edge compatible range input */
+input[type="range"] {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #00ff88;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #00ff88;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+/* Edge/IE range input styling */
+input[type="range"]::-ms-thumb {
+    width: 16px;
+    height: 16px;
+    background: #00ff88;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+input[type="range"]::-ms-track {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 2px;
+}
+
+input[type="range"]::-ms-fill-lower {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+input[type="range"]::-ms-fill-upper {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+input[type="checkbox"] {
+    accent-color: #00ff88;
+    transform: scale(1.1);
+    margin-right: 6px;
+}
+
+/* Input Rows */
+.input-row {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+.input-row .btn {
+    flex: 1;
+    min-width: 60px;
+}
+
+/* Playback Controls */
+.playback-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.playback-controls .btn {
+    flex: 1;
+    min-width: 70px;
+    font-size: 11px;
+}
+
+/* Speed Controls */
+.speed-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+}
+
+.speed-display {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #00ff88;
+    padding: 6px 12px;
+    border-radius: 15px;
+    color: #00ff88;
+    font-weight: bold;
+    min-width: 70px;
+    text-align: center;
+    font-size: 12px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.speed-presets {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.preset-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s;
+    flex: 1;
+    min-width: 50px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preset-btn:hover {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+/* Appearance Controls */
+.appearance-row {
+    display: flex;
+    gap: 12px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+.control-item {
+    flex: 1;
+    min-width: 100px;
+}
+
+.control-item label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: #bbb;
+    font-weight: bold;
+}
+
+.control-item input[type="range"] + span {
+    display: block;
+    text-align: center;
+    margin-top: 4px;
+    color: #00ff88;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+/* File Info */
+.file-info {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+/* Shortcuts */
+.shortcuts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.shortcut {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+}
+
+.shortcut kbd {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 3px 5px;
+    font-size: 10px;
+    color: #00ff88;
+    font-family: monospace;
+    font-weight: bold;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.shortcut span {
+    color: #ccc;
+    font-size: 10px;
+}
+
+/* Ad Panel Areas - Google AdSense Compatible */
+.ad-panel {
+    padding: 0;
+    margin: 15px 0;
+    text-align: center;
+    width: 100%;
+}
+
+.ad-panel .ad-placeholder {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+    padding: 15px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    transition: all 0.3s;
+    min-height: 250px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.ad-placeholder:hover {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: #00ff88;
+    color: #00ff88;
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.2);
+}
+
+.ad-placeholder i {
+    font-size: 18px;
+    opacity: 0.7;
+}
+
+/* Bottom Panel Ad Area */
+.ad-panel.ad-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    background: #2c3e50;
+    padding: 0;
+    min-height: 90px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ad-panel.ad-bottom .ad-placeholder {
+    width: 320px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 11px;
+    gap: 5px;
+    min-height: 50px;
+}
+
+/* Sidebar Ad Areas */
+.ad-sidebar {
+    position: fixed;
+    top: 130px;
+    bottom: 90px;
+    width: 150px;
+    z-index: 99;
+}
+
+.ad-left {
+    left: 0;
+}
+
+.ad-vertical {
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    font-size: 10px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.ad-vertical:hover {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+/* Fullscreen */
+body.fullscreen .control-panel,
+body.fullscreen .status-bar,
+body.fullscreen .ad-sidebar,
+body.fullscreen .ad-banner-top,
+body.fullscreen .ad-banner-bottom {
+    display: none;
+}
+
+body.fullscreen .prompter-container {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    cursor: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .control-panel {
+        width: 350px;
+    }
+    
+    .control-panel.minimized {
+        transform: translateX(-300px);
+    }
+    
+    .prompter-container {
+        left: 350px;
+        right: 100px;
+    }
+    
+    .ad-sidebar {
+        width: 100px;
+    }
+    
+    .ad-vertical {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 768px) {
+    .control-panel {
+        width: 100%;
+        right: 0;
+        transform: translateX(-100%);
+    }
+    
+    .control-panel.minimized {
+        transform: translateX(-100%);
+    }
+    
+    .prompter-container {
+        left: 0;
+        right: 0;
+    }
+    
+    .ad-sidebar {
+        display: none;
+    }
+    
+    .status-bar {
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .speed-indicator {
+        margin-left: 0;
+    }
+    
+    .ad-banner-top .ad-placeholder,
+    .ad-banner-bottom .ad-placeholder {
+        width: 320px;
+        height: 50px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+.control-panel {
+    animation: slideIn 0.3s ease-out;
+}
+
+.control-group {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Edge specific fixes */
+@supports (-ms-ime-align: auto) {
+    .scrolling-text {
+        transform-style: preserve-3d;
+    }
+    
+    .vertical-text.mirrored,
+    .horizontal-text.mirrored {
+        filter: fliph;
+        -ms-filter: "fliph";
+    }
+}
+
+
+/* Additional CSS for Infinite Scroll Button */
+
+.btn-infinite {
+    background: linear-gradient(45deg, #9b59b6, #8e44ad) !important;
+    color: white !important;
+}
+
+.btn-infinite:hover {
+    background: linear-gradient(45deg, #8e44ad, #7d3c98) !important;
+}
+
+.btn-infinite.active {
+    background: linear-gradient(45deg, #00ff88, #00cc6a) !important;
+    color: #000 !important;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.5) !important;
+}
+
+.btn-infinite.active:hover {
+    background: linear-gradient(45deg, #00cc6a, #00aa55) !important;
+}

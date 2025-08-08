@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>Mobile Prompter - BeePrompter</title>
+    <meta name="description" content="Professional mobile teleprompter with touch controls, mirror mode and adjustable speed.">
+    <link rel="canonical" href="https://www.beeprompter.com/mobile/">
+    
+    <!-- Google AdSense - Replace with your Publisher ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+            crossorigin="anonymous"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        .prompter-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .scrolling-text {
+            position: absolute;
+            white-space: normal;
+            font-size: 32px;
+            font-weight: bold;
+            color: #00ff88;
+            width: 90%;
+            left: 50%;
+            top: 100vh;
+            transform: translateX(-50%);
+            text-align: center;
+            line-height: 1.4;
+            word-break: break-word;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.7);
+            padding: 20px;
+            transition: none;
+            will-change: transform;
+        }
+
+        .scrolling-text.mirrored {
+            transform: scaleX(-1) translateX(50%);
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.98);
+            padding: 15px;
+            border-top: 2px solid #00ff88;
+            display: none;
+            z-index: 1001;
+            box-shadow: 0 -5px 30px rgba(0, 255, 136, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .controls.visible {
+            display: block;
+            transform: translateY(0);
+        }
+
+        .control-section {
+            margin-bottom: 15px;
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-section h3 {
+            color: #00ff88;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-row label {
+            color: #00ff88;
+            font-size: 13px;
+            font-weight: bold;
+            min-width: 50px;
+        }
+
+        .control-row input, .control-row select, .control-row button, .control-row textarea {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            flex: 1;
+            min-height: 44px;
+        }
+
+        .control-row textarea {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+
+        .control-row input[type="range"] {
+            height: 30px;
+            -webkit-appearance: none;
+            background: transparent;
+            flex: 1;
+        }
+
+        .control-row input[type="range"]::-webkit-slider-track {
+            background: #333;
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        .control-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            background: #00ff88;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-top: -6px;
+        }
+
+        .control-row input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            flex: none;
+            accent-color: #00ff88;
+        }
+
+        .control-row button {
+            background: #00ff88;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: none;
+            touch-action: manipulation;
+        }
+
+        .control-row button:active {
+            background: #00cc6a;
+            transform: scale(0.98);
+        }
+
+        .control-row button.active {
+            background: #ff6600;
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.5);
+        }
+
+        .paste-area {
+            background: rgba(0, 20, 0, 0.8);
+            border: 2px dashed #00ff88;
+            padding: 20px;
+            text-align: center;
+            color: #00ff88;
+            cursor: pointer;
+            margin: 10px 0;
+            border-radius: 8px;
+            transition: all 0.3s;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            touch-action: manipulation;
+        }
+
+        .paste-area:active {
+            background: rgba(0, 40, 0, 0.8);
+            border-color: #00cc6a;
+            transform: scale(0.98);
+        }
+
+        .paste-area.pasting {
+            background: rgba(0, 40, 20, 0.8);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .status {
+            position: fixed;
+            top: 90px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff88;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 2px solid #00ff88;
+            z-index: 1002;
+            word-wrap: break-word;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .status.show {
+            opacity: 1;
+        }
+
+        .speed-indicator {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff88;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border: 2px solid #00ff88;
+            z-index: 1002;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .speed-indicator.show {
+            opacity: 1;
+        }
+
+        .value-display {
+            color: #fff;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: right;
+            font-size: 11px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .button-group button {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .unified-top-controls {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-evenly;
+            z-index: 1002;
+            padding: 0 20px;
+        }
+
+        .unified-top-controls.hidden {
+            display: none;
+        }
+
+        .unified-btn {
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            touch-action: manipulation;
+            font-weight: bold;
+            width: 50px;
+            height: 50px;
+        }
+
+        .unified-btn:active {
+            background: rgba(0, 255, 136, 0.4);
+            transform: scale(0.95);
+        }
+
+        .unified-btn.active {
+            background: rgba(255, 102, 0, 0.3);
+            border-color: #ff6600;
+            color: #ff6600;
+        }
+
+        .unified-btn.mirror-active {
+            background: rgba(102, 255, 255, 0.3);
+            border-color: #66ffff;
+            color: #66ffff;
+        }
+
+        .unified-btn.visible {
+            background: rgba(0, 255, 136, 0.6);
+        }
+
+        .hidden-mode .controls,
+        .hidden-mode .status,
+        .hidden-mode .speed-indicator,
+        .hidden-mode .unified-top-controls {
+            display: none !important;
+        }
+
+        .hidden-mode {
+            cursor: none;
+        }
+
+        .touch-feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .touch-feedback.show {
+            opacity: 1;
+        }
+
+        /* Banner Ad Styles */
+        .ad-banner-mobile {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            opacity: 0.9;
+        }
+
+        .ad-banner-mobile.hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 360px) {
+            .scrolling-text {
+                font-size: 24px;
+                width: 95%;
+                padding: 10px;
+            }
+            
+            .controls {
+                padding: 10px;
+            }
+            
+            .control-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .control-row label {
+                min-width: auto;
+                text-align: center;
+            }
+            
+            .value-display {
+                text-align: center;
+            }
+
+            .button-group button {
+                min-width: 80px;
+            }
+
+            .unified-btn {
+                padding: 8px;
+                font-size: 14px;
+                width: 40px;
+                height: 40px;
+            }
+
+            .status {
+                font-size: 11px;
+                padding: 10px 12px;
+                left: 10px;
+                right: 10px;
+                top: 80px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .scrolling-text {
+                font-size: 40px;
+                width: 80%;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            .scrolling-text {
+                font-size: 28px;
+            }
+            
+            .controls {
+                max-height: 70vh;
+            }
+
+            .unified-top-controls {
+                top: 10px;
+                padding: 0 10px;
+            }
+
+            .status {
+                top: 70px;
+                font-size: 11px;
+                padding: 8px 12px;
+            }
+        }
+
+        @media (display-mode: standalone) {
+            .status {
+                top: 110px;
+            }
+
+            .unified-top-controls {
+                top: 40px;
+                padding: 0 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status" id="status">Ready</div>
+    <div class="speed-indicator" id="speedIndicator">Speed: 50 px/s</div>
+    <div class="touch-feedback" id="touchFeedback">Action</div>
+    
+    <!-- Mobile Banner Ad -->
+    <div class="ad-banner-mobile" id="mobileBannerAd">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="4567890123"
+             data-ad-format="banner"
+             data-full-width-responsive="true"></ins>
+    </div>
+    
+    <div class="prompter-container">
+        <div class="scrolling-text" id="scrollingText">Load or type your text...</div>
+    </div>
+
+    <div class="unified-top-controls" id="topControls">
+        <button class="unified-btn" id="topPlayBtn" onclick="togglePlay()">▶️</button>
+        <button class="unified-btn" id="topMirrorBtn" onclick="toggleMirrorFromTop()" title="Mirror Mode">🪞</button>
+        <button class="unified-btn" id="toggleBtn" onclick="toggleControls()">⚙️</button>
+        <button class="unified-btn" onclick="resetPosition()">🔄</button>
+    </div>
+
+    <div class="controls" id="controls">
+        <div class="control-section">
+            <h3>📝 TEXT SETTINGS</h3>
+            
+            <div class="paste-area" id="pasteArea" onclick="pasteFromClipboard()">
+                <div>📋 Paste text from clipboard</div>
+                <small style="opacity: 0.8;">Tap to paste</small>
+            </div>
+            
+            <div class="control-row">
+                <textarea id="textInput" placeholder="Type your text here..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="updateText()">Update Text</button>
+                <button onclick="clearText()">Clear</button>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="control-row">
+                <label>Size:</label>
+                <input type="range" id="sizeRange" min="20" max="60" value="32" oninput="updateSize()" />
+                <span class="value-display" id="sizeValue">32px</span>
+            </div>
+            <div class="control-row">
+                <label>Color:</label>
+                <select id="colorSelect" onchange="updateColor()">
+                    <option value="#00ff88">Green</option>
+                    <option value="#ffffff">White</option>
+                    <option value="#ff0066">Pink</option>
+                    <option value="#0099ff">Blue</option>
+                    <option value="#ffff00">Yellow</option>
+                    <option value="#ff6600">Orange</option>
+                </select>
+            </div>
+            <div class="control-row">
+                <label>
+                    <input type="checkbox" id="mirrorCheckbox" onchange="updateMirror()">
+                    Mirror Mode
+                </label>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>⚡ SPEED SETTINGS</h3>
+            <div class="control-row">
+                <label>Speed:</label>
+                <input type="range" id="speedRange" min="0" max="300" value="50" oninput="updateSpeed()" />
+                <span class="value-display" id="speedValue">50 px/s</span>
+            </div>
+            <div style="color: #888; font-size: 11px; text-align: center; margin-top: 5px;">
+                0 = Maximum Speed | 300 = Slowest
+            </div>
+        </div>
+
+        <!-- Mobile Ad in Controls -->
+        <div class="control-section">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="6789012345"
+                 data-ad-format="fluid"
+                 data-ad-layout-key="-6t+ed+2i-1n-4w"></ins>
+        </div>
+    </div>
+
+    <!-- Initialize AdSense -->
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+
+    <script>
+        // Global variables
+        let isPlaying = false;
+        let controlsVisible = false;
+        let hiddenMode = false;
+        let currentSpeed = 50;
+        let animationId = null;
+        let textHeight = 0;
+        let animationStartTime = null;
+        let totalPausedTime = 0;
+        let lastPauseTime = null;
+        let currentScrollPosition = 0;
+        let isMirrored = false;
+        let manualPosition = null;
+        let isDragging = false;
+
+        const scrollingText = document.getElementById('scrollingText');
+        const textInput = document.getElementById('textInput');
+        const speedRange = document.getElementById('speedRange');
+        const touchFeedback = document.getElementById('touchFeedback');
+
+        // Touch event variables
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        let touchMoved = false;
+
+        // Enhanced animation system - Continuous flow
+        function animate(timestamp) {
+            if (!animationStartTime) {
+                animationStartTime = timestamp;
+                if (currentScrollPosition !== 0) {
+                    const totalDistance = window.innerHeight + textHeight;
+                    const currentProgress = (window.innerHeight - currentScrollPosition) / totalDistance;
+                    const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+                    const timeToCurrentPosition = (currentProgress * totalDistance / effectiveSpeed) * 1000;
+                    totalPausedTime = -timeToCurrentPosition;
+                }
+            }
+            
+            const elapsedTime = timestamp - animationStartTime - totalPausedTime;
+            const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+            const totalDistance = window.innerHeight + textHeight;
+            const progress = (elapsedTime * effectiveSpeed / 1000) / totalDistance;
+            const cyclicProgress = progress % 1;
+            currentScrollPosition = window.innerHeight - (cyclicProgress * totalDistance);
+            
+            scrollingText.style.transform = isMirrored 
+                ? `scaleX(-1) translateX(50%) translateY(${currentScrollPosition - window.innerHeight}px)`
+                : `translateX(-50%) translateY(${currentScrollPosition - window.innerHeight}px)`;
+            scrollingText.style.top = window.innerHeight + 'px';
+            
+            if (isPlaying) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function updateTextDimensions() {
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.visibility = 'hidden';
+            tempDiv.style.fontSize = getComputedStyle(scrollingText).fontSize;
+            tempDiv.style.fontFamily = getComputedStyle(scrollingText).fontFamily;
+            tempDiv.style.fontWeight = getComputedStyle(scrollingText).fontWeight;
+            tempDiv.style.width = '90%';
+            tempDiv.style.textAlign = 'center';
+            tempDiv.style.lineHeight = '1.4';
+            tempDiv.style.wordBreak = 'break-word';
+            tempDiv.style.padding = '20px';
+            tempDiv.textContent = scrollingText.textContent;
+            
+            document.body.appendChild(tempDiv);
+            textHeight = tempDiv.offsetHeight;
+            document.body.removeChild(tempDiv);
+        }
+
+        function showFeedback(message, duration = 1000) {
+            touchFeedback.textContent = message;
+            touchFeedback.classList.add('show');
+            setTimeout(() => {
+                touchFeedback.classList.remove('show');
+            }, duration);
+        }
+
+        function showStatus(message, duration = 3000) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.classList.add('show');
+            setTimeout(() => {
+                status.classList.remove('show');
+            }, duration);
+        }
+
+        function updateMirror() {
+            const mirrorCheckbox = document.getElementById('mirrorCheckbox');
+            const topMirrorBtn = document.getElementById('topMirrorBtn');
+            
+            isMirrored = mirrorCheckbox.checked;
+            
+            if (isMirrored) {
+                topMirrorBtn.classList.add('mirror-active');
+            } else {
+                topMirrorBtn.classList.remove('mirror-active');
+            }
+            
+            if (isPlaying) {
+                scrollingText.style.transform = isMirrored 
+                    ? `scaleX(-1) translateX(50%) translateY(${currentScrollPosition - window.innerHeight}px)`
+                    : `translateX(-50%) translateY(${currentScrollPosition - window.innerHeight}px)`;
+            } else {
+                if (isMirrored) {
+                    scrollingText.classList.add('mirrored');
+                } else {
+                    scrollingText.classList.remove('mirrored');
+                }
+            }
+        }
+
+        function toggleMirrorFromTop() {
+            const mirrorCheckbox = document.getElementById('mirrorCheckbox');
+            mirrorCheckbox.checked = !mirrorCheckbox.checked;
+            updateMirror();
+            showFeedback(isMirrored ? 'Mirror On' : 'Mirror Off');
+        }
+
+        function toggleControls() {
+            controlsVisible = !controlsVisible;
+            const controls = document.getElementById('controls');
+            const toggleBtn = document.getElementById('toggleBtn');
+            
+            if (controlsVisible) {
+                controls.style.display = 'block';
+                setTimeout(() => controls.classList.add('visible'), 10);
+                toggleBtn.classList.add('visible');
+            } else {
+                controls.classList.remove('visible');
+                setTimeout(() => controls.style.display = 'none', 300);
+                toggleBtn.classList.remove('visible');
+            }
+        }
+
+        async function pasteFromClipboard() {
+            const pasteArea = document.getElementById('pasteArea');
+            
+            try {
+                pasteArea.classList.add('pasting');
+                pasteArea.innerHTML = '<div>📋 Pasting...</div>';
+                
+                const text = await navigator.clipboard.readText();
+                
+                if (text.trim()) {
+                    textInput.value = text;
+                    updateText();
+                    pasteArea.innerHTML = '<div>✅ Text pasted!</div>';
+                    showStatus('Text pasted from clipboard');
+                } else {
+                    pasteArea.innerHTML = '<div>❌ No text found in clipboard</div>';
+                }
+                
+                setTimeout(() => {
+                    pasteArea.classList.remove('pasting');
+                    pasteArea.innerHTML = '<div>📋 Paste text from clipboard</div><small style="opacity: 0.8;">Tap to paste</small>';
+                }, 2000);
+                
+            } catch (err) {
+                pasteArea.classList.remove('pasting');
+                pasteArea.innerHTML = '<div>❌ Clipboard access denied</div><small>Type manually</small>';
+                setTimeout(() => {
+                    pasteArea.innerHTML = '<div>📋 Paste text from clipboard</div><small style="opacity: 0.8;">Tap to paste</small>';
+                }, 3000);
+            }
+        }
+
+        function updateText() {
+            let text = textInput.value.trim();
+            if (!text) {
+                text = "Load or type your text...";
+            }
+            
+            text = text.replace(/\s+/g, ' '); 
+            scrollingText.textContent = text;
+            
+            updateTextDimensions();
+            showStatus(`Text updated: ${text.length} characters`);
+        }
+
+        function clearText() {
+            textInput.value = '';
+            scrollingText.textContent = 'Load or type your text...';
+            updateTextDimensions();
+            showStatus('Text cleared');
+        }
+
+        function updateSpeed() {
+            const speedValue = document.getElementById('speedValue');
+            const speedIndicator = document.getElementById('speedIndicator');
+            currentSpeed = parseInt(speedRange.value);
+            const displayText = currentSpeed === 0 ? 'MAX' : currentSpeed + ' px/s';
+            speedValue.textContent = displayText;
+            speedIndicator.textContent = `Speed: ${displayText}`;
+            
+            if (isPlaying && animationStartTime !== null) {
+                const now = performance.now();
+                const currentTime = now - animationStartTime - totalPausedTime;
+                const oldSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+                const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+                animationStartTime = now - (currentTime * effectiveSpeed / oldSpeed);
+            }
+        }
+
+        function updateSize() {
+            const sizeRange = document.getElementById('sizeRange');
+            const sizeValue = document.getElementById('sizeValue');
+            const size = sizeRange.value;
+            sizeValue.textContent = size + 'px';
+            scrollingText.style.fontSize = size + 'px';
+            
+            updateTextDimensions();
+        }
+
+        function updateColor() {
+            const colorSelect = document.getElementById('colorSelect');
+            const color = colorSelect.value;
+            
+            scrollingText.style.color = color;
+            scrollingText.style.textShadow = `0 0 15px ${color}B0`;
+        }
+
+        function togglePlay() {
+            const topPlayBtn = document.getElementById('topPlayBtn');
+            isPlaying = !isPlaying;
+            
+            if (isPlaying) {
+                topPlayBtn.textContent = '⏸️';
+                topPlayBtn.classList.add('active');
+                showStatus('Playing', 1000);
+                
+                if (lastPauseTime !== null) {
+                    const pauseDuration = performance.now() - lastPauseTime;
+                    totalPausedTime += pauseDuration;
+                    lastPauseTime = null;
+                }
+                
+                animationStartTime = null;
+                animationId = requestAnimationFrame(animate);
+                
+            } else {
+                topPlayBtn.textContent = '▶️';
+                topPlayBtn.classList.remove('active');
+                showStatus('Paused', 1000);
+                
+                lastPauseTime = performance.now();
+                
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+        }
+
+        function resetPosition() {
+            const wasPlaying = isPlaying;
+            
+            animationStartTime = null;
+            totalPausedTime = 0;
+            lastPauseTime = null;
+            currentScrollPosition = 0;
+            
+            scrollingText.style.top = window.innerHeight + 'px';
+            scrollingText.style.transform = isMirrored 
+                ? 'scaleX(-1) translateX(50%)' 
+                : 'translateX(-50%)';
+            manualPosition = null;
+            
+            showStatus('Reset to beginning', 1000);
+            
+            if (wasPlaying) {
+                setTimeout(togglePlay, 100);
+            }
+        }
+
+        function toggleHiddenMode() {
+            hiddenMode = !hiddenMode;
+            document.body.classList.toggle('hidden-mode', hiddenMode);
+            
+            const mobileBannerAd = document.getElementById('mobileBannerAd');
+            if (hiddenMode) {
+                mobileBannerAd.classList.add('hidden');
+                showStatus('Hidden mode active', 2000);
+            } else {
+                mobileBannerAd.classList.remove('hidden');
+                showStatus('Hidden mode off', 1000);
+            }
+        }
+
+        // Touch event system - Long press removed
+        let touchTimeout = null;
+        let preventNextTap = false;
+        let initialTouchPos = null;
+        let wasPausedByTouch = false;
+        let wasPlayingBeforeTouch = false;
+        let lastDragPosition = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.closest('.controls') || e.target.closest('.unified-top-controls')) {
+                return;
+            }
+            
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchStartTime = Date.now();
+            touchMoved = false;
+            
+            initialTouchPos = {
+                x: touchStartX,
+                y: touchStartY
+            };
+            
+            lastDragPosition = currentScrollPosition;
+            
+            if (isPlaying && !controlsVisible && !hiddenMode) {
+                wasPlayingBeforeTouch = true;
+                wasPausedByTouch = true;
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                lastPauseTime = performance.now();
+            } else {
+                wasPlayingBeforeTouch = false;
+                wasPausedByTouch = false;
+            }
+            
+            if (!controlsVisible && !hiddenMode) {
+                isDragging = true;
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchmove', function(e) {
+            const touch = e.touches[0];
+            const currentX = touch.clientX;
+            const currentY = touch.clientY;
+            
+            const diffX = currentX - touchStartX;
+            const diffY = currentY - touchStartY;
+            const totalDistance = Math.sqrt(diffX * diffX + diffY * diffY);
+            
+            if (totalDistance > 5) {
+                touchMoved = true;
+                e.preventDefault();
+                
+                if (touchTimeout) {
+                    clearTimeout(touchTimeout);
+                    touchTimeout = null;
+                }
+                
+                if (isDragging && !controlsVisible && !hiddenMode && Math.abs(diffY) > Math.abs(diffX)) {
+                    currentScrollPosition = lastDragPosition + diffY;
+                    
+                    const totalDist = window.innerHeight + textHeight;
+                    while (currentScrollPosition > window.innerHeight) {
+                        currentScrollPosition -= totalDist;
+                    }
+                    while (currentScrollPosition < -textHeight) {
+                        currentScrollPosition += totalDist;
+                    }
+                    
+                    scrollingText.style.transform = isMirrored 
+                        ? `scaleX(-1) translateX(50%) translateY(${currentScrollPosition - window.innerHeight}px)`
+                        : `translateX(-50%) translateY(${currentScrollPosition - window.innerHeight}px)`;
+                    scrollingText.style.top = window.innerHeight + 'px';
+                }
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', function(e) {
+            if (!e.changedTouches[0]) return;
+            
+            if (touchTimeout) {
+                clearTimeout(touchTimeout);
+                touchTimeout = null;
+            }
+            
+            if (e.target.closest('.controls') || e.target.closest('.unified-top-controls')) {
+                isDragging = false;
+                wasPausedByTouch = false;
+                return;
+            }
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const totalDiffX = initialTouchPos ? touchEndX - initialTouchPos.x : 0;
+            const totalDiffY = initialTouchPos ? touchEndY - initialTouchPos.y : 0;
+            
+            const touchDuration = Date.now() - touchStartTime;
+            
+            isDragging = false;
+            
+            if (wasPausedByTouch && wasPlayingBeforeTouch) {
+                wasPausedByTouch = false;
+                wasPlayingBeforeTouch = false;
+                
+                const effectiveSpeed = currentSpeed === 0 ? 500 : currentSpeed;
+                const totalDist = window.innerHeight + textHeight;
+                const currentProgress = (window.innerHeight - currentScrollPosition) / totalDist;
+                const timeToCurrentPosition = (currentProgress * totalDist / effectiveSpeed) * 1000;
+                
+                animationStartTime = performance.now();
+                totalPausedTime = -timeToCurrentPosition;
+                lastPauseTime = null;
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            if (preventNextTap) {
+                preventNextTap = false;
+                return;
+            }
+            
+            if (touchDuration < 400 && touchMoved) {
+                if (Math.abs(totalDiffX) > 60 && Math.abs(totalDiffX) > Math.abs(totalDiffY) * 1.5) {
+                    e.preventDefault();
+                    if (!hiddenMode) {
+                        toggleControls();
+                        showFeedback(controlsVisible ? 'Controls Opened' : 'Controls Closed');
+                    }
+                    return;
+                }
+            }
+            
+            if (touchDuration < 300 && !touchMoved) {
+                e.preventDefault();
+                togglePlay();
+                showFeedback(isPlaying ? 'Started' : 'Paused');
+            }
+            
+        }, { passive: false });
+
+        // Event listeners
+        window.addEventListener('resize', function() {
+            updateTextDimensions();
+            if (!isPlaying) {
+                resetPosition();
+            }
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && isPlaying) {
+                togglePlay();
+                showStatus('Page hidden - playback paused');
+            }
+        });
+
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                updateTextDimensions();
+                resetPosition();
+                showStatus('Screen rotated - reset to beginning');
+            }, 300);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case 'KeyH':
+                    toggleHiddenMode();
+                    break;
+                case 'KeyC':
+                    if (!hiddenMode) toggleControls();
+                    break;
+                case 'KeyR':
+                    resetPosition();
+                    break;
+                case 'KeyM':
+                    isMirrored = !isMirrored;
+                    document.getElementById('mirrorCheckbox').checked = isMirrored;
+                    updateMirror();
+                    break;
+                case 'Escape':
+                    if (controlsVisible) toggleControls();
+                    if (hiddenMode) toggleHiddenMode();
+                    break;
+            }
+        });
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', function() {
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0');
+            }
+            
+            updateTextDimensions();
+            resetPosition();
+            updateSpeed();
+            updateMirror();
+            
+            showStatus('Play/Pause: Single Touch | Controls: Horizontal Swipe', 5000);
+            
+            // Initialize ads
+            setTimeout(() => {
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            }, 1000);
+        });
+
+        // Wake Lock API
+        let wakeLock = null;
+        
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    showStatus('Screen will stay on', 2000);
+                }
+            } catch (err) {
+                console.log('Wake lock not supported:', err);
+            }
+        }
+
+        const originalTogglePlay = togglePlay;
+        togglePlay = function() {
+            originalTogglePlay();
+            if (isPlaying) {
+                requestWakeLock();
+            } else if (wakeLock) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        };
+
+        // Paste event
+        document.addEventListener('paste', function(e) {
+            if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text');
+                if (text) {
+                    textInput.value = text;
+                    updateText();
+                    showStatus('Text pasted');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
